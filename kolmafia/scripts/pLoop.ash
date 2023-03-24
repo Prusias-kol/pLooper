@@ -25,8 +25,8 @@ asdon fuels
 Hard requirements
 - Clan VIP
 - stooper
-- CBB recipes
-- If own left-hand man, green lavaco lamp
+- All CBB recipes
+- If own left-hand man, a lavaco lamp
 */
 
 /*
@@ -237,7 +237,13 @@ void nightcap() {
     }
     if (have_familiar($familiar[Left-Hand Man])) {
         use_familiar($familiar[Left-Hand Man]);
-        equip( $slot[familiar], $item[8437]);
+        equip( $slot[familiar], $item[none]);
+        if (available_amount($item[8437])) //green
+            equip( $slot[familiar], $item[8437]);
+        if (available_amount($item[8435])) //red
+            equip( $slot[familiar], $item[8435]);
+        if (available_amount($item[8436])) //blue
+            equip( $slot[familiar], $item[8436]);
     }
     
 }
