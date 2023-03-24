@@ -291,6 +291,7 @@ void nightcap() {
 void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
+	use_familiar($familiar[none]);
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
         if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
