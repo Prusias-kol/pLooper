@@ -48,6 +48,7 @@ void ploopHelper() {
     print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
     print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
     print("To use the script, please run ploop init before you run ploop fullday");
+    print("Commands","teal");
     print_html("<b>init</b> - Initializes pLooper. Mandatory for the script to work");
     print_html("<b>fullday</b> - Fullday wrapper");
 }
@@ -236,7 +237,7 @@ void postRun(string x) {
     if (get_property("prusias_ploop_garboPostAscendWorkshed") == "")
         garboUsage(x);
     else
-        garboUsage("workshed=" + get_property("prusias_ploop_garboPostAscendWorkshed") + " " + x);
+        garboUsage(`workshed="` + get_property("prusias_ploop_garboPostAscendWorkshed") + `" ` + x);
     
 }
 
@@ -295,7 +296,7 @@ void reentrantWrapper() {
             if (get_property("prusias_ploop_garboWorkshed") == "")
                 garboUsage("ascend");
             else
-                garboUsage("ascend workshed=" + get_property("prusias_ploop_garboWorkshed"));
+                garboUsage(`ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
         }
 
         if (!get_property('thoth19_event_list').contains_text("leg1garbo"))
