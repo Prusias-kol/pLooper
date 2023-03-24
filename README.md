@@ -5,6 +5,10 @@ To install, run
 ```
 git checkout https://github.com/Prusias-kol/pLooper main
 ```   
+To use the script, type the following into CLI
+```
+ploop help
+```
 
 ## Hard Requirements
 - Clan VIP
