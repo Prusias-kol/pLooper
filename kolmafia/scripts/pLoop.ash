@@ -37,10 +37,14 @@ prusias_ploop_ascendScript - string
 prusias_ploop_nightcapOutfit - string
 prusias_ploop_preAscendGarden - string of packet of seeds name. if empty, skips
 prusias_ploop_moonId - int
+	Order on this page is the id, starting with mongoose = 1: https://kol.coldfront.net/thekolwiki/index.php/Moon_sign
 prusias_ploop_classId - string - class name, exact, lowercase
 prusias_ploop_astralPet - string - item name, exact
 prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
+	1 is male; 2 is female
+prusias_ploop_ascensionDifficulty - int
+	2 is normal
 */
 
 void augmentBreakfast() {
