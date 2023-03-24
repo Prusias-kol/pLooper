@@ -57,17 +57,22 @@ void augmentBreakfast() {
 
 }
 
-void useCombo() {
+boolean useCombo() {
     if (available_amount($item[Beach Comb])) {
         if (my_adventures() > 0) {
             cli_execute("combo " + my_adventures());
+            return true;
         }
     }
+    return false;
 }
 
 void CS_Ascension() {
 
     useCombo();
+
+    if (!get_property('thoth19_event_list').contains_text("wineglassDone") && !get_property('thoth19_event_list').contains_text("preAscend"))
+        addBreakpoint("preAscend");
 
 
     int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
@@ -283,7 +288,10 @@ void reentrantWrapper() {
         } else {
             cli_execute("garbo ascend");
             cli_execute("CONSUME NIGHTCAP VALUE 100");
-            useCombo();
+            if (!useCombo()) {
+                cli_execute("garbo ascend");
+            }
+            CS_Ascension();
         }
     }
     if (get_property("ascensionsToday").to_int() == 1) {
