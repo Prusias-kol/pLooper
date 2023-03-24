@@ -184,6 +184,7 @@ void preCSrun() {
 }
 
 void garboUsage(string x) {
+	print("trying to run garbo","teal");
     if (!get_property("_essentialTofuUsed").to_boolean()) {
         cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
         if (item_amount($item[essential tofu]) >= 1) {
@@ -316,7 +317,7 @@ void reentrantWrapper() {
             if (my_adventures() == 0) {
                 CS_Ascension();
             } else {
-                print("Something went wrong", "red");
+                print("Still adventures left over after", "red");
                 abort();
             }
         } else {
