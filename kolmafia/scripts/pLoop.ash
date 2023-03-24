@@ -51,14 +51,14 @@ void augmentBreakfast() {
         cli_execute("shower ice");
 
     //big book
-    if (get_property("bankedKarma").to_int() > 2000 && available_amount($item[The Big Book of Every Skill])) 
+    if (get_property("bankedKarma").to_int() > 2000 && available_amount($item[The Big Book of Every Skill]) > 0) 
         use(1, $item[The Big Book of Every Skill]);
     
 
 }
 
 boolean useCombo() {
-    if (available_amount($item[Beach Comb])) {
+    if (available_amount($item[Beach Comb]) > 0) {
         if (my_adventures() > 0) {
             cli_execute("combo " + my_adventures());
             return true;
@@ -243,11 +243,11 @@ void nightcap() {
     if (have_familiar($familiar[Left-Hand Man])) {
         use_familiar($familiar[Left-Hand Man]);
         equip( $slot[familiar], $item[none]);
-        if (available_amount($item[8437])) //green
+        if (available_amount($item[8437]) > 0) //green
             equip( $slot[familiar], $item[8437]);
-        if (available_amount($item[8435])) //red
+        if (available_amount($item[8435]) > 0) //red
             equip( $slot[familiar], $item[8435]);
-        if (available_amount($item[8436])) //blue
+        if (available_amount($item[8436]) > 0) //blue
             equip( $slot[familiar], $item[8436]);
     }
     
@@ -269,7 +269,7 @@ void reentrantWrapper() {
             addBreakpoint("leg1garbo");
         if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
             preCSrun();
-        if (available_amount($item[Drunkula's wineglass]) > 0 || have_equipped($item[Drunkula's wineglass]) > 0) {
+        if (available_amount($item[Drunkula's wineglass]) > 0 || have_equipped($item[Drunkula's wineglass])) {
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
             // if (!hippy_stone_broken())
@@ -320,5 +320,5 @@ void reentrantWrapper() {
 }
 
 void main() {
-    reentrantWrapper();
+    //reentrantWrapper();
 }
