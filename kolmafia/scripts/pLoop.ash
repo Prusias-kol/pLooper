@@ -44,7 +44,7 @@ prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
 */
 
-void printHelp() {
+void ploopHelper() {
     print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
     print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
     print("To use the script, please run ploop init before you run ploop fullday");
@@ -189,9 +189,9 @@ void garboUsage(string x) {
             cli_execute("use essential tofu");
         }
     }
-    if (available_amount(!get_property("_glennGoldenDiceUsed").to_boolean() && $item[Glenn's golden dice]) > 0)
+    if (!get_property("_glennGoldenDiceUsed").to_boolean() && available_amount($item[Glenn's golden dice]) > 0)
         cli_execute("use Glenn's golden dice");
-    if (available_amount(!get_property("_lodestoneUsed").to_boolean() && $item[lodestone]) > 0)
+    if (!get_property("_lodestoneUsed").to_boolean() && available_amount($item[lodestone]) > 0)
         cli_execute("use lodestone");
     cli_execute("garbo " + x);
 }
@@ -358,7 +358,7 @@ void main(string input) {
         switch(commands[i]){
             case "fullday":
                 if (get_property("prusias_ploop_ascendScript") == "") {
-                    printHelp();
+                    ploopHelper();
                     return;
                 }
                 reentrantWrapper();
@@ -367,7 +367,7 @@ void main(string input) {
                 init();
                 return;
             default:
-                printHelp();
+                ploopHelper();
                 return;
         }
     }
