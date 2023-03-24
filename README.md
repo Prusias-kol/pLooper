@@ -17,6 +17,7 @@ ploop help
 - If own left-hand man, a lavaco lamp
 
 ## Farming optimizations
+- Inserts [ptrack](https://github.com/Prusias-kol/pTrack) breakpoints. Run ptrack help in CLI to learn how to view them
 - Supports perming skills + using big book of every skill if karma > 2000. (Recommend removing from ur breakfast if you SC ascend to avoid burning ur karma)
 - Ensures 1 pizza of legend each (some CS scripts pull)
 - uses glenn's golden dice for garbo
