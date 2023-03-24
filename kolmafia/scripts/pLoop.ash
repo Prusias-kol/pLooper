@@ -17,6 +17,7 @@ combo
 Supports perming skills + using big book of every skill if karma > 2000
 Ensures 1 pizza of legend each (some Cs scripts pull)
 uses glenn's golden dice for garbo
+uses lodestone for garbo
 asdon fuels
 */
 
@@ -37,15 +38,37 @@ prusias_ploop_ascendScript - string
 prusias_ploop_nightcapOutfit - string
 prusias_ploop_preAscendGarden - string of packet of seeds name. if empty, skips
 prusias_ploop_moonId - int
-	Order on this page is the id, starting with mongoose = 1: https://kol.coldfront.net/thekolwiki/index.php/Moon_sign
 prusias_ploop_classId - string - class name, exact, lowercase
 prusias_ploop_astralPet - string - item name, exact
 prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
-	1 is male; 2 is female
-prusias_ploop_ascensionDifficulty - int
-	2 is normal
 */
+
+void printHelp() {
+    print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
+    print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
+    print("To use the script, please run ploop init before you run ploop fullday");
+    print_html("<b>init</b> - Initializes pLooper. Mandatory for the script to work");
+    print_html("<b>fullday</b> - Fullday wrapper");
+}
+
+void init() {
+    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
+    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Leave blank to ignore."));
+    set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
+    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
+    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
+    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
+    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
+    set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending? Type just as you would type in the CLI to run the script."));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+
+
+
+
+}   
 
 void augmentBreakfast() {
     pBreakfast();
@@ -166,8 +189,10 @@ void garboUsage(string x) {
             cli_execute("use essential tofu");
         }
     }
-    if (available_amount($item[Glenn's golden dice]) > 0)
+    if (available_amount(!get_property("_glennGoldenDiceUsed").to_boolean() && $item[Glenn's golden dice]) > 0)
         cli_execute("use Glenn's golden dice");
+    if (available_amount(!get_property("_lodestoneUsed").to_boolean() && $item[lodestone]) > 0)
+        cli_execute("use lodestone");
     cli_execute("garbo " + x);
 }
 
@@ -208,7 +233,11 @@ void postRunNoGarbo() {
 void postRun(string x) {
     postRunNoGarbo();
 
-    garboUsage("workshed=" + get_property("prusias_ploop_garboPostAscendWorkshed") + " " + x);
+    if (get_property("prusias_ploop_garboPostAscendWorkshed") == "")
+        garboUsage(x);
+    else
+        garboUsage("workshed=" + get_property("prusias_ploop_garboPostAscendWorkshed") + " " + x);
+    
 }
 
 void nightcap() {
@@ -279,7 +308,7 @@ void reentrantWrapper() {
             // if (!hippy_stone_broken())
             //     runPvP();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
-                cli_execute("garbo ascend");
+                garboUsage("ascend");
             }
             if (!get_property('thoth19_event_list').contains_text("wineglassDone"))
                 addBreakpoint("wineglassDone");
@@ -290,10 +319,10 @@ void reentrantWrapper() {
                 abort();
             }
         } else {
-            cli_execute("garbo ascend");
+            garboUsage("ascend");
             cli_execute("CONSUME NIGHTCAP VALUE 100");
             if (!useCombo()) {
-                cli_execute("garbo ascend");
+                garboUsage("ascend");
             }
             CS_Ascension();
         }
@@ -323,6 +352,23 @@ void reentrantWrapper() {
 
 }
 
-void main() {
-    //reentrantWrapper();
+void main(string input) {
+    string [int] commands = input.split_string("\\s+");
+    for(int i = 0; i < commands.count(); ++i){
+        switch(commands[i]){
+            case "fullday":
+                if (get_property("prusias_ploop_ascendScript") == "") {
+                    printHelp();
+                    return;
+                }
+                reentrantWrapper();
+                return;
+            case "init":
+                init();
+                return;
+            default:
+                printHelp();
+                return;
+        }
+    }
 }
