@@ -193,6 +193,8 @@ void preCSrun() {
         cli_execute("acquire 1 tobiko marble soda");
     if (needToAcquireItem($item[wasabi marble soda]))
         cli_execute("acquire 1 wasabi marble soda");
+    if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
+        cli_execute("acquire 1 one-day ticket to Dinseylandfill");
 
     print("Remember to spend your pvp fights", "fuchsia");
 
