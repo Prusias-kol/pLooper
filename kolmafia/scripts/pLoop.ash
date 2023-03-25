@@ -56,7 +56,7 @@ void ploopHelper() {
 void init() {
     set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
     set_property("prusias_ploop_garboWorkshed", user_prompt("After RO, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Leave blank to ignore."));
+    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
     set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
     set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
     set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
@@ -171,7 +171,8 @@ void preCSrun() {
     }
     cli_execute("garden pick");
     if (get_property("prusias_ploop_preAscendGarden") != "")
-        cli_execute("use " + get_property("prusias_ploop_preAscendGarden"));
+	if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
+            cli_execute("use " + get_property("prusias_ploop_preAscendGarden"));
     use_familiar($familiar[Stooper]);
     if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
         cli_execute("drink stillsuit distillate");
