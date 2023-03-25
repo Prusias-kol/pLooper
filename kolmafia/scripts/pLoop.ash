@@ -108,7 +108,7 @@ void CS_Ascension() {
 	int type = 2;//normal difficulty
 	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
 	int pathId = 25;//cs
-	int classId = get_property("prusias_ploop_moonId").to_class().to_int();
+	int classId = get_property("prusias_ploop_classId").to_class().to_int();
     int gender = get_property("prusias_ploop_ascendGender").to_int(); //1 boy, 2 girl
 
 
