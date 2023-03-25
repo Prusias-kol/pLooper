@@ -268,7 +268,19 @@ void nightcap() {
         else
             cli_execute("CONSUME VALUE " + (get_property("valueOfAdventure").to_int()));
     }
+	//burning cape
+	if (have_equipped($item[burning cape]) || available_amount($item[burning cape]) > 0) {
+		cli_execute("equip burning cape");
+	    } else if (mall_price( $item[ Burning Newspaper ] ) < (get_property("valueOfAdventure").to_int())) {
+		if (available_amount($item[burning newspaper]) == 0) {
+		    cli_execute("buy 1 burning newspaper @" + get_property("valueOfAdventure").to_int());
+		}
+		cli_execute("make burning cape");
+		cli_execute("equip burning cape");
+	    }
     cli_execute("outfit " + get_property("prusias_ploop_nightcapOutfit"));
+	if (available_amount($item[burning cape]) > 0) 
+		cli_execute("equip burning cape");
     
 
     //nightcapping
