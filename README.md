@@ -23,3 +23,9 @@ ploop help
 - uses glenn's golden dice for garbo
 - uses lodestone for garbo
 - asdon fuels if you own asdon
+- uses burning cape for RO if in price threshold
+
+## PreRun prep
+- acquires every legendary CBB pizza if in price range
+- acquires borrowed time
+- sets up garden
