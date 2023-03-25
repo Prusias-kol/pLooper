@@ -31,4 +31,5 @@ ploop help
 - acquires non-Euclidean angle
 - acquires tobiko marble soda
 - acquires wasabi marble soda
+- acquires one-day ticket to Dinseylandfill
 - sets up garden
