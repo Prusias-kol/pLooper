@@ -157,18 +157,11 @@ void CS_Ascension() {
 
 }
 
+boolean needToAcquireItem(item x) {
+    return (available_amount(x) + closet_amount(x) + storage_amount(x) == 0);
+}
+
 void preCSrun() {
-    int yeastPrice = mall_price($item[Yeast of Boris]);
-    int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
-    int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
-    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 10*get_property("valueOfAdventure").to_int())) {
-        if (available_amount($item[calzone of legend])  < 1)
-            cli_execute("make calzone of legend");
-        if (available_amount($item[deep dish of legend])  < 1)
-            cli_execute("make deep dish of legend");
-        if (available_amount($item[pizza of legend])  < 1)
-            cli_execute("make pizza of legend");
-    }
     cli_execute("garden pick");
     if (get_property("prusias_ploop_preAscendGarden") != "")
 	if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
@@ -179,8 +172,27 @@ void preCSrun() {
     else
         cli_execute("CONSUME VALUE " + (get_property("valueOfAdventure").to_int()));
 
-    if (available_amount($item[borrowed time]) + closet_amount($item[borrowed time]) + storage_amount($item[borrowed time]) == 0)
+    //Acquire Potential CS Pulls
+     int yeastPrice = mall_price($item[Yeast of Boris]);
+    int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
+    int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
+    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 10*get_property("valueOfAdventure").to_int())) {
+        if (available_amount($item[calzone of legend])  == 0)
+            cli_execute("make calzone of legend");
+        if (available_amount($item[deep dish of legend])  == 0)
+            cli_execute("make deep dish of legend");
+        if (available_amount($item[pizza of legend])  == 0)
+            cli_execute("make pizza of legend");
+    }
+
+    if (needToAcquireItem($item[borrowed time]))
         cli_execute("acquire 1 borrowed time");
+    if (needToAcquireItem($item[non-Euclidean angle]))
+        cli_execute("acquire 1 non-Euclidean angle");
+    if (needToAcquireItem($item[tobiko marble soda]))
+        cli_execute("acquire 1 tobiko marble soda");
+    if (needToAcquireItem($item[wasabi marble soda]))
+        cli_execute("acquire 1 wasabi marble soda");
 
     print("Remember to spend your pvp fights", "fuchsia");
 
