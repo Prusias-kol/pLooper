@@ -28,4 +28,7 @@ ploop help
 ## PreRun prep
 - acquires every legendary CBB pizza if in price range
 - acquires borrowed time
+- acquires non-Euclidean angle
+- acquires tobiko marble soda
+- acquires wasabi marble soda
 - sets up garden
