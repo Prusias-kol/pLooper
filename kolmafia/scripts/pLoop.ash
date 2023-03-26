@@ -170,7 +170,7 @@ void preCSrun() {
     if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
         cli_execute("drink stillsuit distillate");
     else
-        cli_execute("CONSUME VALUE " + (get_property("valueOfAdventure").to_int()));
+        cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
 
     //Acquire Potential CS Pulls
      int yeastPrice = mall_price($item[Yeast of Boris]);
@@ -282,7 +282,7 @@ void nightcap() {
         if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
             cli_execute("drink stillsuit distillate");
         else
-            cli_execute("CONSUME VALUE " + (get_property("valueOfAdventure").to_int()));
+            cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
     }
 	//burning cape
 	if (have_equipped($item[burning cape]) || available_amount($item[burning cape]) > 0) {
@@ -298,12 +298,6 @@ void nightcap() {
 	if (available_amount($item[burning cape]) > 0) 
 		cli_execute("equip burning cape");
     
-
-    //nightcapping
-    //cli_execute("CONSUME NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
-    if (my_inebriety() == inebriety_limit()) {
-        cli_execute("CONSUME NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
-    }
     if (have_familiar($familiar[Left-Hand Man])) {
         use_familiar($familiar[Left-Hand Man]);
         equip( $slot[familiar], $item[none]);
@@ -315,12 +309,23 @@ void nightcap() {
             equip( $slot[familiar], $item[8436]);
     }
     
+
+    //nightcapping
+    //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
+    if (my_inebriety() == inebriety_limit()) {
+        cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
+    } else {
+        print("Nightcap was overdrunk when it shouldn't have been");
+        abort();
+    }
+    
+    
 }
 
 void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
-	use_familiar($familiar[none]);
+	    use_familiar($familiar[none]);
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
         if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
@@ -334,9 +339,9 @@ void reentrantWrapper() {
             addBreakpoint("leg1garbo");
         if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
             preCSrun();
-        if (available_amount($item[Drunkula's wineglass]) > 0 || have_equipped($item[Drunkula's wineglass])) {
+        if (!needToAcquireItem($item[Drunkula's wineglass])|| have_equipped($item[Drunkula's wineglass])) {
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
-                cli_execute("CONSUME NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
+                cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
             // if (!hippy_stone_broken())
             //     runPvP();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
@@ -352,7 +357,7 @@ void reentrantWrapper() {
             }
         } else {
             garboUsage("ascend");
-            cli_execute("CONSUME NIGHTCAP VALUE 100");
+            cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
             if (!useCombo()) {
                 garboUsage("ascend");
             }
