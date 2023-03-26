@@ -176,13 +176,18 @@ void preCSrun() {
      int yeastPrice = mall_price($item[Yeast of Boris]);
     int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
     int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
-    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 10*get_property("valueOfAdventure").to_int())) {
+    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 20*get_property("valueOfAdventure").to_int())) {
         if (available_amount($item[calzone of legend])  == 0)
             cli_execute("make calzone of legend");
         if (available_amount($item[deep dish of legend])  == 0)
             cli_execute("make deep dish of legend");
         if (available_amount($item[pizza of legend])  == 0)
             cli_execute("make pizza of legend");
+    } else {
+        if (available_amount($item[calzone of legend])  == 0 && available_amount($item[pizza of legend])  == 0 && available_amount($item[deep dish of legend])  == 0) {
+            print("T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
+            abort();
+        }
     }
 
     if (needToAcquireItem($item[borrowed time]))
@@ -264,10 +269,10 @@ void nightcap() {
     int profitOffset = 100;
     string page = visit_url("campground.php?action=inspectdwelling");
     if (!page.contains_text("Clockwork Maid") && !page.contains_text("Meat Maid")) {
-        if (buy(1, $item[Clockwork Maid], (8 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
+        if (available_amount($item[Clockwork Maid]) > 0 || buy(1, $item[Clockwork Maid], (8 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
             use(1, $item[Clockwork Maid]);
             print("Installed Clockwork Maid", "green");
-        } else if (buy(1, $item[Meat Maid], (4 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
+        } else if (available_amount($item[Meat Maid]) > 0 || buy(1, $item[Meat Maid], (4 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
             use(1, $item[Meat Maid]);
             print("Installed Meat Maid", "lime");
         } else {
@@ -285,7 +290,7 @@ void nightcap() {
             cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
     }
 	//burning cape
-	if (have_equipped($item[burning cape]) || available_amount($item[burning cape]) > 0) {
+	if (available_amount($item[burning cape]) > 0) {
 		cli_execute("equip burning cape");
     } else if (mall_price( $item[ Burning Newspaper ] ) < (get_property("valueOfAdventure").to_int())) {
         if (available_amount($item[burning newspaper]) == 0) {
@@ -339,7 +344,7 @@ void reentrantWrapper() {
             addBreakpoint("leg1garbo");
         if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
             preCSrun();
-        if (!needToAcquireItem($item[Drunkula's wineglass])|| have_equipped($item[Drunkula's wineglass])) {
+        if (!needToAcquireItem($item[Drunkula's wineglass])) {
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
             // if (!hippy_stone_broken())
