@@ -364,7 +364,7 @@ void reentrantWrapper() {
             garboUsage("ascend");
             cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
             if (!useCombo()) {
-                garboUsage("ascend");
+                //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
             CS_Ascension();
         }
