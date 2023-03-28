@@ -223,6 +223,8 @@ void garboUsage(string x) {
 void postRunNoGarbo() {
     cli_execute("hagnk all");
     cli_execute("refresh all");
+    //ensure beach access
+    retrieve_item(1,$item[bitchin' meatcar]);
     augmentBreakfast();
 
     if (my_mp() < 250)
