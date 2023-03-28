@@ -158,6 +158,7 @@ void CS_Ascension() {
 }
 
 boolean needToAcquireItem(item x) {
+    print("Testing ownership of " + x);
     return (available_amount(x) + closet_amount(x) + storage_amount(x) == 0);
 }
 
