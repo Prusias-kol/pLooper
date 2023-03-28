@@ -329,6 +329,14 @@ void nightcap() {
     
 }
 
+void beforeScriptRuns() {
+    if (!needToAcquireItem($item[S.I.T. Course Completion Certificate]) && !get_property("_sitCourseCompleted").to_boolean()) {
+        if (get_property("choiceAdventure1494") == "" || get_property("choiceAdventure1494") == "0")
+            set_property("choiceAdventure1494","2");
+        cli_execute("use S.I.T. Course Completion Certificate");
+    }
+}
+
 void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
@@ -373,6 +381,7 @@ void reentrantWrapper() {
     }
     if (get_property("ascensionsToday").to_int() == 1) {
         print("In 2nd leg", "teal");
+        beforeScriptRuns();
         //kingLiberated = true leg1 before ascending. false after ascending
         if (!get_property('kingLiberated').to_boolean()) {
             cli_execute(get_property("prusias_ploop_ascendScript"));
