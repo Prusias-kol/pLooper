@@ -374,7 +374,7 @@ void reentrantWrapper() {
             }
         } else {
             print("Breakfast leg end of day, overdrunk WITHOUT wineglass", "teal");
-            garboUsage("ascend");
+            //garboUsage("ascend"); //Garbo doesn't know how to run with stooper
             cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
             if (!useCombo()) {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
