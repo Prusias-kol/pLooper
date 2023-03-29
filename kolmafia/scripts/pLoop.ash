@@ -86,6 +86,16 @@ void augmentBreakfast() {
 }
 
 boolean useCombo() {
+    if (available_amount($item[Beach Comb]) == 0) {
+        int sandprice = mall_price($item[Grain of sand]) * 3;
+        int combPrice = mall_price($item[Piece of driftwood]);
+        int advLimit = combPrice/sandprice;
+        if (my_adventures() > advLimit) {
+            cli_execute("buy 1 piece of driftwood");
+            cli_execute("use piece of driftwood");
+        }
+
+    }
     if (available_amount($item[Beach Comb]) > 0 || available_amount($item[driftwood beach comb]) > 0) {
         if (my_adventures() > 0) {
             cli_execute("combo " + my_adventures());
@@ -376,16 +386,6 @@ void reentrantWrapper() {
             print("Breakfast leg end of day, overdrunk WITHOUT wineglass", "teal");
             //garboUsage("ascend"); //Garbo doesn't know how to run with stooper
             cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
-            if (available_amount($item[Beach Comb]) == 0) {
-                int sandprice = mall_price($item[Grain of sand]) * 3;
-                int combPrice = mall_price($item[Piece of driftwood]);
-                int advLimit = combPrice/sandprice;
-                if (my_adventures() > advLimit) {
-                    cli_execute("buy 1 piece of driftwood");
-                    cli_execute("use piece of driftwood");
-                }
-
-            }
             if (!useCombo()) {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
