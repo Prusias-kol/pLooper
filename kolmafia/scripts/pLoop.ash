@@ -86,7 +86,7 @@ void augmentBreakfast() {
 }
 
 boolean useCombo() {
-    if (available_amount($item[Beach Comb]) == 0) {
+    if (available_amount($item[Beach Comb]) == 0 && available_amount($item[driftwood beach comb]) == 0) {
         int sandprice = mall_price($item[Grain of sand]) * 3;
         int combPrice = mall_price($item[Piece of driftwood]);
         int advLimit = combPrice/sandprice;
