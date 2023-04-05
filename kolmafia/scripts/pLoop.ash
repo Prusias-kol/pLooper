@@ -127,7 +127,7 @@ void CS_Ascension() {
 		visit_url("council.php",false,true);
 		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
 	}
-	else if (get_property("kingLiberated").to_boolean() && in_casual()) {
+	else if (get_property("kingLiberated").to_boolean()) {
 		print("attempting to enter valhalla");
 		//abort("need url of non-CS ascension location");
 		visit_url("",false,true);
