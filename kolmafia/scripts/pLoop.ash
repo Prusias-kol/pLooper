@@ -316,6 +316,27 @@ void nightcap() {
 	if (available_amount($item[burning cape]) > 0) 
 		cli_execute("equip burning cape");
     
+    
+    
+
+    //nightcapping
+    //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
+    if (my_inebriety() == inebriety_limit()) {
+        cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
+    } else {
+        if (have_familiar($familiar[Left-Hand Man])) {
+            use_familiar($familiar[Left-Hand Man]);
+            equip( $slot[familiar], $item[none]);
+            if (available_amount($item[8437]) > 0) //green
+                equip( $slot[familiar], $item[8437]);
+            if (available_amount($item[8435]) > 0) //red
+                equip( $slot[familiar], $item[8435]);
+            if (available_amount($item[8436]) > 0) //blue
+                equip( $slot[familiar], $item[8436]);
+        }
+        print("Nightcap was overdrunk when it shouldn't have been");
+        abort();
+    }
     if (have_familiar($familiar[Left-Hand Man])) {
         use_familiar($familiar[Left-Hand Man]);
         equip( $slot[familiar], $item[none]);
@@ -325,16 +346,6 @@ void nightcap() {
             equip( $slot[familiar], $item[8435]);
         if (available_amount($item[8436]) > 0) //blue
             equip( $slot[familiar], $item[8436]);
-    }
-    
-
-    //nightcapping
-    //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
-    if (my_inebriety() == inebriety_limit()) {
-        cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
-    } else {
-        print("Nightcap was overdrunk when it shouldn't have been");
-        abort();
     }
     
     
