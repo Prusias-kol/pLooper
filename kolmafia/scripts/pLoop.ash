@@ -421,9 +421,11 @@ void reentrantWrapper() {
             augmentBreakfast();
         if (get_property('kingLiberated').to_boolean() && my_inebriety() == inebriety_limit() && my_adventures() == 0) {
             nightcap();
-            if (!get_property('thoth19_event_list').contains_text("end"))
-                addBreakpoint("end");
         }
+	if (!get_property('thoth19_event_list').contains_text("end")) {
+                addBreakpoint("end");
+		cli_execute("ptrack recap");
+	}
 
     }
 
