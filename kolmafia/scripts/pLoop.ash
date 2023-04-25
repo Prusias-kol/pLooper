@@ -218,6 +218,7 @@ void preCSrun() {
 
 void garboUsage(string x) {
 	print("trying to run garbo","teal");
+    shrugAT();
     if (!get_property("_essentialTofuUsed").to_boolean()) {
         cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
         if (item_amount($item[essential tofu]) >= 1) {
@@ -232,6 +233,7 @@ void garboUsage(string x) {
 }
 
 void postRunNoGarbo() {
+    shrugAT();
     cli_execute("hagnk all");
     cli_execute("refresh all");
     //ensure beach access
@@ -450,4 +452,18 @@ void main(string input) {
                 return;
         }
     }
+}
+
+
+void shrugAT() {
+    cli_execute("shrug Stevedave's Shanty of Superiority");
+    cli_execute("shrug Power Ballad of the Arrowsmith");
+    cli_execute("shrug Moxie of the Mariachi");
+    cli_execute("shrug The Moxious Madrigal");
+    cli_execute("shrug The Magical Mojomuscular Melody");
+    cli_execute("shrug Cletus's Canticle of Celerity");
+    cli_execute("shrug The Power Ballad of the Arrowsmith");
+    cli_execute("shrug Jackasses' Symphony of Destruction");
+    cli_execute("shrug Brawnee's Anthem of Absorption");
+    cli_execute("shrug The Psalm of Pointiness");
 }
