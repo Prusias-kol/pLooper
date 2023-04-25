@@ -461,8 +461,6 @@ void shrugAT() {
     cli_execute("shrug The Moxious Madrigal");
     cli_execute("shrug The Magical Mojomuscular Melody");
     cli_execute("shrug Cletus's Canticle of Celerity");
-    cli_execute("shrug The Power Ballad of the Arrowsmith");
     cli_execute("shrug Jackasses' Symphony of Destruction");
     cli_execute("shrug Brawnee's Anthem of Absorption");
-    cli_execute("shrug The Psalm of Pointiness");
 }
