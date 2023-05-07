@@ -239,7 +239,7 @@ void garboUsage(string x) {
         cli_execute("use Glenn's golden dice");
     if (!get_property("_lodestoneUsed").to_boolean() && available_amount($item[lodestone]) > 0)
         cli_execute("use lodestone");
-    cli_execute("garbo " + x);
+    cli_execute("garbo candydish" + x);
 }
 
 void postRunNoGarbo() {
