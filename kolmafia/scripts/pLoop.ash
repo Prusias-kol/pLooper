@@ -42,6 +42,7 @@ prusias_ploop_classId - string - class name, exact, lowercase
 prusias_ploop_astralPet - string - item name, exact
 prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
+prusias_ploop_yachtzeeOption = boolean
 */
 
 void ploopHelper() {
@@ -226,6 +227,24 @@ void preCSrun() {
 
 }
 
+boolean yachtzeeAccess() {
+    if (can_adventure($location[The Sunken Party Yacht])) return true;
+    if (get_property("prusias_ploop_yachtzeeOption").to_boolean()
+    && item_amount($item[jurassic parka]) > 0
+    && item_amount($item[Cincho de Mayo]) > 0
+    && item_amount($item[Clara's bell]) > 0) {
+        if (get_property("_spikolodonSpikeUses").to_int() == 0
+        && get_property("_claraBellUsed").to_boolean() == false) {
+            cli_execute("acquire 1 one-day ticket to Spring Break Beach @600000");
+            if (item_amount($item[one-day ticket to Spring Break Beach]) == 0) 
+                return false;
+            cli_execute("use 1 one-day ticket to Spring Break Beach");
+            return true;
+        }
+    }
+    return false;
+}
+
 void garboUsage(string x) {
 	print("trying to run garbo","teal");
     shrugAT();
@@ -239,7 +258,10 @@ void garboUsage(string x) {
         cli_execute("use Glenn's golden dice");
     if (!get_property("_lodestoneUsed").to_boolean() && available_amount($item[lodestone]) > 0)
         cli_execute("use lodestone");
-    cli_execute("garbo candydish " + x);
+    if (yachtzeeAccess())
+        cli_execute("garbo candydish yachtzeechain " + x);
+    else
+        cli_execute("garbo candydish " + x);
 }
 
 void postRunNoGarbo() {
