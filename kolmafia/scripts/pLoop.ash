@@ -82,6 +82,14 @@ void shrugAT() {
     cli_execute("shrug Brawnee's Anthem of Absorption");
 }
 
+void runPvP() {
+    //break stone
+    visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
+
+
+    cli_execute("pvp 300 fame 7");
+}
+
 void augmentBreakfast() {
     pBreakfast();
 
