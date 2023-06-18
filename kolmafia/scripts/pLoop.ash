@@ -248,7 +248,8 @@ boolean yachtzeeAccess() {
     && item_amount($item[Clara's bell]) > 0) {
         if (get_property("_spikolodonSpikeUses").to_int() == 0
         && get_property("_claraBellUsed").to_boolean() == false) {
-            cli_execute("acquire 1 one-day ticket to Spring Break Beach @600000");
+            if (item_amount($item[one-day ticket to Spring Break Beach]) == 0) 
+                cli_execute("buy 1 one-day ticket to Spring Break Beach @600000");
             if (item_amount($item[one-day ticket to Spring Break Beach]) == 0) 
                 return false;
             cli_execute("use 1 one-day ticket to Spring Break Beach");
