@@ -52,6 +52,8 @@ void ploopHelper() {
     print("Commands","teal");
     print_html("<b>init</b> - Initializes pLooper. Mandatory for the script to work");
     print_html("<b>fullday</b> - Fullday wrapper");
+
+    cli_execute("pUpdates check ploop");
 }
 
 void init() {
@@ -477,6 +479,7 @@ void reentrantWrapper() {
 
     }
 
+    cli_execute("pUpdates check ploop");
 }
 
 void main(string input) {
