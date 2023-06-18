@@ -85,12 +85,14 @@ void shrugAT() {
 void runPvP() {
     //break stone
     visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
+    //get fights
+    if (item_amount($item[School of Hard Knocks Diploma]) > 0 && !get_property("_hardKnocksDiplomaUsed").to_boolean()) {
+        cli_execute("use School of Hard Knocks Diploma");
+    }
+
     //uberpvp
-    cli_execute("UberPvpOptimizer");
     cli_execute("PVP_MAB");
 
-
-    cli_execute("pvp 300 fame 7");
 }
 
 void augmentBreakfast() {
