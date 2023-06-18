@@ -85,6 +85,9 @@ void shrugAT() {
 void runPvP() {
     //break stone
     visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
+    //uberpvp
+    cli_execute("UberPvpOptimizer");
+    cli_execute("PVP_MAB");
 
 
     cli_execute("pvp 300 fame 7");
