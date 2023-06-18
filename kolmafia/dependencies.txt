@@ -3,4 +3,4 @@ https://github.com/Loathing-Associates-Scripting-Society/garbage-collector.git r
 https://github.com/Loathing-Associates-Scripting-Society/combo.git release
 https://github.com/soolar/CONSUME.ash/trunk/RELEASE/
 https://github.com/Loathing-Associates-Scripting-Society/UberPvPOptimizer master
-https://github.com/Pantocyclus/PVP_MAB main
+https://github.com/Pantocyclus/PVP_MAB.git release
