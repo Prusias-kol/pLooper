@@ -430,8 +430,8 @@ void reentrantWrapper() {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
-            // if (!hippy_stone_broken())
-            //     runPvP();
+        if (!hippy_stone_broken())
+                 runPvP();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
                 garboUsage("ascend");
             }
