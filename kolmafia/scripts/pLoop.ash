@@ -86,7 +86,8 @@ void shrugAT() {
 
 void runPvP() {
     //break stone
-    visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
+    if (!hippy_stone_broken())
+        visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
     //get fights
     if (item_amount($item[School of Hard Knocks Diploma]) > 0 && !get_property("_hardKnocksDiplomaUsed").to_boolean()) {
         cli_execute("use School of Hard Knocks Diploma");
@@ -213,7 +214,7 @@ void preCSrun() {
      int yeastPrice = mall_price($item[Yeast of Boris]);
     int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
     int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
-    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 20*get_property("valueOfAdventure").to_int())) {
+    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 50*get_property("valueOfAdventure").to_int())) {
         if (available_amount($item[calzone of legend])  == 0)
             cli_execute("make calzone of legend");
         if (available_amount($item[deep dish of legend])  == 0)
@@ -223,6 +224,7 @@ void preCSrun() {
     } else {
         if (available_amount($item[calzone of legend])  == 0 && available_amount($item[pizza of legend])  == 0 && available_amount($item[deep dish of legend])  == 0) {
             print("T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
+            print("Acquire 1 of each and run ploop again to continue.", "red");
             abort();
         }
     }
@@ -245,7 +247,7 @@ void preCSrun() {
 boolean yachtzeeAccess() {
     if (can_adventure($location[The Sunken Party Yacht])) return true;
     if (get_property("prusias_ploop_yachtzeeOption").to_boolean()
-    && item_amount($item[jurassic parka]) > 0
+    && (item_amount($item[jurassic parka]) > 0 || have_equipped($item[jurassic parka]))
     && item_amount($item[Cincho de Mayo]) > 0
     && item_amount($item[Clara's bell]) > 0) {
         if (get_property("_spikolodonSpikeUses").to_int() == 0
@@ -331,15 +333,18 @@ void nightcap() {
     //Handle maids
     int profitOffset = 100;
     string page = visit_url("campground.php?action=inspectdwelling");
-    if (!page.contains_text("Clockwork Maid") && !page.contains_text("Meat Maid")) {
+    if (!page.contains_text("Clockwork Maid") && !page.contains_text("Meat Butler") && !page.contains_text("Meat Maid")) {
         if (available_amount($item[Clockwork Maid]) > 0 || buy(1, $item[Clockwork Maid], (8 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
             use(1, $item[Clockwork Maid]);
             print("Installed Clockwork Maid", "green");
+        } else if (available_amount($item[Meat Butler]) > 0 || buy(1, $item[Meat Butler], (4 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
+            use(1, $item[Meat Butler]);
+            print("Installed Meat Butler", "lime");
         } else if (available_amount($item[Meat Maid]) > 0 || buy(1, $item[Meat Maid], (4 * get_property("valueOfAdventure").to_int()) - profitOffset) == 1) {
             use(1, $item[Meat Maid]);
             print("Installed Meat Maid", "lime");
         } else {
-            print("Clockwork Maid and Meat Maid both outside price range.", "red");
+            print("Clockwork Maid, Meat Butler, and Meat Maid both outside price range.", "red");
         }
     } else {
         print("We already have a Clockwork Maid installed", "red");
@@ -430,7 +435,6 @@ void reentrantWrapper() {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
-        if (!hippy_stone_broken())
                  runPvP();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
                 garboUsage("ascend");
@@ -438,6 +442,7 @@ void reentrantWrapper() {
             if (!get_property('thoth19_event_list').contains_text("wineglassDone"))
                 addBreakpoint("wineglassDone");
             if (my_adventures() == 0) {
+                runPvP();
                 CS_Ascension();
             } else {
                 print("Still adventures left over after", "red");
@@ -450,6 +455,7 @@ void reentrantWrapper() {
             if (!useCombo()) {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
+            runPvP();
             CS_Ascension();
         }
     }
