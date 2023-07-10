@@ -222,7 +222,7 @@ void preCSrun() {
         if (available_amount($item[pizza of legend])  == 0)
             cli_execute("make pizza of legend");
     } else {
-        if (available_amount($item[calzone of legend])  == 0 && available_amount($item[pizza of legend])  == 0 && available_amount($item[deep dish of legend])  == 0) {
+        if (available_amount($item[calzone of legend])  == 0 || available_amount($item[pizza of legend])  == 0 ||available_amount($item[deep dish of legend])  == 0) {
             print("T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
             print("Acquire 1 of each and run ploop again to continue.", "red");
             abort();
