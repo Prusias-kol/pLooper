@@ -370,9 +370,9 @@ void nightcap() {
 
     // Nightcap outfit
     foreach key,piece in outfit_pieces(get_property("prusias_ploop_nightcapOutfit")) {
-        if (piece == $item[stinky cheese diaper]) {
+        if (piece == $item[stinky cheese diaper] && available_amount($item[stinky cheese diaper]) == 0) {
             cli_execute("fold stinky cheese diaper");
-        } else if (piece == $item[loathing legion knife]) {
+        } else if (piece == $item[loathing legion knife] && available_amount($item[loathing legion knife]) == 0) {
             cli_execute("fold loathing legion knife");
         }
     }
