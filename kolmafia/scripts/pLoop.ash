@@ -61,7 +61,7 @@ void init() {
     set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
     set_property("prusias_ploop_garboWorkshed", user_prompt("After RO, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
-    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-softcore, 2-normal, 3-hardcore."));
+    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
     set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
     set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
     set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
