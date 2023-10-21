@@ -488,6 +488,84 @@ void reentrantWrapper() {
     cli_execute("pUpdates check ploop");
 }
 
+void reentrantHalloweenWrapper() {
+    cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
+    if (get_property("ascensionsToday").to_int() == 0) {
+	    use_familiar($familiar[none]);
+        if (!get_property("breakfastCompleted").to_boolean())
+            augmentBreakfast();
+        if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
+            if (get_property("prusias_ploop_garboWorkshed") == "")
+                garboUsage("nobarf ascend");
+            else
+                garboUsage(`nobarf ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
+            cli_execute("freecandy");
+        }
+
+        if (!get_property('thoth19_event_list').contains_text("leg1halloween"))
+            addBreakpoint("leg1halloween");
+        if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
+            preCSrun();
+        if (!needToAcquireItem($item[Drunkula's wineglass])) {
+            print("Breakfast leg end of day, overdrunk with wineglass", "teal");
+            if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
+                cli_execute("CONSUME ALL NIGHTCAP VALUE 9999");
+                runPvP();
+            if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
+                cli_execute("freecandy");
+                garboUsage("ascend");
+            }
+            if (!get_property('thoth19_event_list').contains_text("spookyWineglassDone"))
+                addBreakpoint("spookyWineglassDone");
+            if (my_adventures() == 0) {
+                runPvP();
+                CS_Ascension();
+            } else {
+                print("Still adventures left over after", "red");
+                abort();
+            }
+        } else {
+            print("Breakfast leg end of day, overdrunk WITHOUT wineglass", "teal");
+            //garboUsage("ascend"); //Garbo doesn't know how to run with stooper
+            cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
+            if (!useCombo()) {
+                //dunno what to do here, garbo ascend fails when overdrunk without wineglass
+            }
+            runPvP();
+            CS_Ascension();
+        }
+    }
+    if (get_property("ascensionsToday").to_int() == 1) {
+        print("In 2nd leg", "teal");
+        beforeScriptRuns();
+        //kingLiberated = true leg1 before ascending. false after ascending
+        if (!get_property('kingLiberated').to_boolean()) {
+            cli_execute(get_property("prusias_ploop_ascendScript"));
+        }
+        if (get_property('kingLiberated').to_boolean() &&
+        (my_inebriety() < inebriety_limit() ||
+        my_fullness() < fullness_limit() ||
+        my_spleen_use() < spleen_limit() ||
+        (my_adventures() > 0 && my_inebriety() <= inebriety_limit()))) {
+            postRun("nobarf");
+            cli_execute("freecandy");
+        }
+        if (!get_property("breakfastCompleted").to_boolean())
+            augmentBreakfast();
+        if (get_property('kingLiberated').to_boolean() && my_inebriety() == inebriety_limit() && my_adventures() == 0) {
+            nightcap();
+            print("Consider using wineglass to burn the rest of your turns for halloween!", "red");
+        }
+	if (!get_property('thoth19_event_list').contains_text("halloweenEnd")) {
+        addBreakpoint("halloweenEnd");
+		cli_execute("ptrack recap");
+	}
+
+    }
+
+    cli_execute("pUpdates check ploop");
+}
+
 void main(string input) {
     string [int] commands = input.split_string("\\s+");
     for(int i = 0; i < commands.count(); ++i){
@@ -497,7 +575,18 @@ void main(string input) {
                     ploopHelper();
                     return;
                 }
-                reentrantWrapper();
+                if (get_property("prusias_ploop_detectHalloween").to_boolean() == true) {
+                    if (holiday() == "Halloween") {
+                        set_property("prusias_ploop_preHalloweenMPA", get_property("valueOfAdventure"));
+                        set_property("valueOfAdventure", "9999");
+                        reentrantHalloweenWrapper();
+                        set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                    } else {
+                        reentrantWrapper();
+                    }
+                } else {
+                    reentrantWrapper();
+                }
                 return;
             case "init":
                 init();
