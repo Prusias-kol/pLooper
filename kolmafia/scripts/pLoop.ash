@@ -495,6 +495,7 @@ void reentrantHalloweenWrapper() {
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
         if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
+            cli_execute("CONSUME ALL VALUE 10000");
             if (get_property("prusias_ploop_garboWorkshed") == "")
                 garboUsage("nobarf ascend");
             else
@@ -547,6 +548,7 @@ void reentrantHalloweenWrapper() {
         my_fullness() < fullness_limit() ||
         my_spleen_use() < spleen_limit() ||
         (my_adventures() > 0 && my_inebriety() <= inebriety_limit()))) {
+            cli_execute("CONSUME ALL VALUE 10000");
             postRun("nobarf");
             cli_execute("freecandy");
         }
