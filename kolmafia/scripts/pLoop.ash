@@ -482,8 +482,21 @@ void reentrantWrapper() {
         print("In 2nd leg", "teal");
         beforeScriptRuns();
         //kingLiberated = true leg1 before ascending. false after ascending
-        if (!get_property('kingLiberated').to_boolean()) {
+        if (!get_property('kingLiberated').to_boolean() && (get_property("prusias_ploop_pathId") != "49" || (get_property("questL13Final") != "step12" && get_property("questL13Final") != "step13" && get_property("questL13Final") != "finished") ) {
             cli_execute(get_property("prusias_ploop_ascendScript"));
+        }
+        if (get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
+            //still king not liberated
+            if (item_amount(item[10058]) > 0) {
+                cli_execute("make * magical sausage");
+                cli_execute("eat * magical sausage");
+            } //kramco 
+            if (item_amount(item[10929]) > 0) {//sweatpants
+
+            }
+            if (!get_property('kingLiberated').to_boolean()) {
+                visit_url("place.php?whichplace=nstower&action=ns_11_prism");
+            }
         }
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
