@@ -402,6 +402,15 @@ void nightcap() {
         cli_execute("make burning cape");
         cli_execute("equip burning cape");
     }
+
+    // Nightcap outfit
+    foreach key,piece in outfit_pieces(get_property("prusias_ploop_nightcapOutfit")) {
+        if (piece == $item[stinky cheese diaper] && available_amount($item[stinky cheese diaper]) == 0) {
+            cli_execute("fold stinky cheese diaper");
+        } else if (piece == $item[loathing legion knife] && available_amount($item[loathing legion knife]) == 0) {
+            cli_execute("fold loathing legion knife");
+        }
+    }
     cli_execute("outfit " + get_property("prusias_ploop_nightcapOutfit"));
 	if (available_amount($item[burning cape]) > 0) 
 		cli_execute("equip burning cape");
