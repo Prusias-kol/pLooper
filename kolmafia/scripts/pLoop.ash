@@ -51,6 +51,8 @@ void ploopHelper() {
     print("To use the script, please run ploop init before you run ploop fullday");
     print("Commands","teal");
     print_html("<b>init</b> - Initializes pLooper. Mandatory for the script to work");
+    //smolinit
+    print_html("<b>smolinit</b> - Initializes pLooper. Mandatory for the script to work");
     print_html("<b>fullday</b> - Fullday wrapper");
 
     cli_execute("pUpdates check ploop");
@@ -69,10 +71,21 @@ void init() {
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
 
-
-
-
 }   
+void smolInit() {
+    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
+    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (leg 1), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
+    set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
+    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
+    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
+    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
+    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
+    set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending? Type just as you would type in the CLI to run the script."));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script (leg 2), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+    set_property("prusias_ploop_pathId", "49");
+}
 
 void shrugAT() {
     cli_execute("shrug Stevedave's Shanty of Superiority");
@@ -144,7 +157,11 @@ void CS_Ascension() {
 	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
 	int type = 2;//normal difficulty
 	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
-	int pathId = 25;//cs
+    int pathId = 25;//cs
+    if (get_property("prusias_ploop_pathId") != "") {
+        pathId = get_property("prusias_ploop_pathId").to_int();
+    }
+	
 	int classId = get_property("prusias_ploop_classId").to_class().to_int();
     int gender = get_property("prusias_ploop_ascendGender").to_int(); //1 boy, 2 girl
 
@@ -193,6 +210,8 @@ void CS_Ascension() {
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1`,true,true);
 
 }
+
+
 
 boolean needToAcquireItem(item x) {
     print("Testing ownership of " + x);
@@ -591,6 +610,9 @@ void main(string input) {
                 return;
             case "init":
                 init();
+                return;
+            case "smolinit":
+                smolInit();
                 return;
             default:
                 ploopHelper();

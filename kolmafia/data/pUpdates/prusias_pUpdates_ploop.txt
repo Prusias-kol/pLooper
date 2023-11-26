@@ -1,3 +1,4 @@
--1	1
+-1	2
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
+2   Supports small loop
