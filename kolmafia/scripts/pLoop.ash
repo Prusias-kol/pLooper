@@ -37,6 +37,7 @@ prusias_ploop_garboPostAscendWorkshed - string
 prusias_ploop_ascendScript - string
 prusias_ploop_nightcapOutfit - string
 prusias_ploop_preAscendGarden - string of packet of seeds name. if empty, skips
+prusias_ploop_ascensionType - int
 prusias_ploop_moonId - int
 prusias_ploop_classId - string - class name, exact, lowercase
 prusias_ploop_astralPet - string - item name, exact
@@ -62,6 +63,7 @@ void init() {
     set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
     set_property("prusias_ploop_garboWorkshed", user_prompt("After RO, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
+    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
     set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
     set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
     set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
@@ -155,7 +157,7 @@ void CS_Ascension() {
 
     int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
 	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
-	int type = 2;//normal difficulty
+    int type = get_property("prusias_ploop_ascensionType").to_int();
 	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
     int pathId = 25;//cs
     if (get_property("prusias_ploop_pathId") != "") {
@@ -230,37 +232,43 @@ void preCSrun() {
         cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
 
     //Acquire Potential CS Pulls
-     int yeastPrice = mall_price($item[Yeast of Boris]);
-    int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
-    int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
-    if ((2*yeastPrice + 2*vegetablePrice + 2*wheyPrice < 50*get_property("valueOfAdventure").to_int())) {
-        if (available_amount($item[calzone of legend])  == 0)
-            cli_execute("make calzone of legend");
-        if (available_amount($item[deep dish of legend])  == 0)
-            cli_execute("make deep dish of legend");
-        if (available_amount($item[pizza of legend])  == 0)
-            cli_execute("make pizza of legend");
-    } else {
-        if (available_amount($item[calzone of legend])  == 0 || available_amount($item[pizza of legend])  == 0 ||available_amount($item[deep dish of legend])  == 0) {
-            print("T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
-            print("Acquire 1 of each and run ploop again to continue.", "red");
-            abort();
+    if (get_property("prusias_ploop_ascensionType").to_int() < 3) {
+        int yeastPrice = mall_price($item[Yeast of Boris]);
+        int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
+        int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
+
+        int pizzaPrice = (2 * yeastPrice) + (2 * vegetablePrice) + (2 * wheyPrice);
+        
+        if (pizzaPrice < 50 * get_property("valueOfAdventure").to_int()) {
+            if (available_amount($item[calzone of legend])  == 0)
+                cli_execute("make calzone of legend");
+
+            if (available_amount($item[deep dish of legend])  == 0)
+                cli_execute("make deep dish of legend");
+
+            if (available_amount($item[pizza of legend])  == 0)
+                cli_execute("make pizza of legend");
+        } else {
+            if (available_amount($item[calzone of legend]) == 0 || available_amount($item[pizza of legend]) == 0 || available_amount($item[deep dish of legend]) == 0) {
+                print("T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
+                print("Acquire 1 of each and run ploop again to continue.", "red");
+                abort();
+            }
         }
+
+        if (needToAcquireItem($item[borrowed time]))
+            cli_execute("acquire 1 borrowed time");
+        if (needToAcquireItem($item[non-Euclidean angle]))
+            cli_execute("acquire 1 non-Euclidean angle");
+        if (needToAcquireItem($item[tobiko marble soda]))
+            cli_execute("acquire 1 tobiko marble soda");
+        if (needToAcquireItem($item[wasabi marble soda]))
+            cli_execute("acquire 1 wasabi marble soda");
+        if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
+            cli_execute("acquire 1 one-day ticket to Dinseylandfill");
     }
 
-    if (needToAcquireItem($item[borrowed time]))
-        cli_execute("acquire 1 borrowed time");
-    if (needToAcquireItem($item[non-Euclidean angle]))
-        cli_execute("acquire 1 non-Euclidean angle");
-    if (needToAcquireItem($item[tobiko marble soda]))
-        cli_execute("acquire 1 tobiko marble soda");
-    if (needToAcquireItem($item[wasabi marble soda]))
-        cli_execute("acquire 1 wasabi marble soda");
-    if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
-        cli_execute("acquire 1 one-day ticket to Dinseylandfill");
-
     print("Remember to spend your pvp fights", "fuchsia");
-
 }
 
 boolean yachtzeeAccess() {
@@ -370,7 +378,7 @@ void nightcap() {
             print("Clockwork Maid, Meat Butler, and Meat Maid both outside price range.", "red");
         }
     } else {
-        print("We already have a Clockwork Maid installed", "red");
+        print("We already have a Maid or Butler installed", "red");
     }
     //stooper
     use_familiar($familiar[Stooper]);
@@ -394,9 +402,6 @@ void nightcap() {
 	if (available_amount($item[burning cape]) > 0) 
 		cli_execute("equip burning cape");
     
-    
-    
-
     //nightcapping
     //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
     if (my_inebriety() == inebriety_limit()) {
@@ -637,4 +642,3 @@ void main(string input) {
         }
     }
 }
-
