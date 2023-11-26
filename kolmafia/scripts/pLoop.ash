@@ -333,6 +333,10 @@ void postRunNoGarbo() {
             cli_execute("asdonmartin drive observantly");
         }
     }
+    if (available_amount($item[5553]) > 0) {
+        //rain-doh
+        cli_execute("use can of rain-doh");
+    }
 
     //shrug all AT songs that are not limited
     cli_execute('shrug stevedave');
