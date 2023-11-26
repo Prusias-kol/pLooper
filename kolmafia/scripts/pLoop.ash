@@ -72,7 +72,7 @@ void init() {
     set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending? Type just as you would type in the CLI to run the script."));
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
-
+    set_property("prusias_ploop_pathId", "25");
 }   
 void smolInit() {
     set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
@@ -87,6 +87,7 @@ void smolInit() {
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script (leg 2), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
     set_property("prusias_ploop_pathId", "49");
+    set_property("prusias_ploop_ascensionType", "2");
 }
 
 void shrugAT() {
@@ -235,7 +236,7 @@ void preCSrun() {
         cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
 
     //Acquire Potential CS Pulls
-    if (get_property("prusias_ploop_ascensionType").to_int() < 3) {
+    if (get_property("prusias_ploop_ascensionType") == "" || get_property("prusias_ploop_ascensionType").to_int() < 3) {
         int yeastPrice = mall_price($item[Yeast of Boris]);
         int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
         int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
