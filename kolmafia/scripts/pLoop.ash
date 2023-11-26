@@ -157,7 +157,10 @@ void CS_Ascension() {
 
     int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
 	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
-    int type = get_property("prusias_ploop_ascensionType").to_int();
+    int type = 2;
+    if (get_property("prusias_ploop_ascensionType") != "") {
+        type = get_property("prusias_ploop_ascensionType").to_int();
+    }
 	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
     int pathId = 25;//cs
     if (get_property("prusias_ploop_pathId") != "") {
