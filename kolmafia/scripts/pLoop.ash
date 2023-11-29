@@ -44,6 +44,7 @@ prusias_ploop_astralPet - string - item name, exact
 prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
 prusias_ploop_yachtzeeOption = boolean
+prusias_ploop_runChrono - boolean
 */
 
 void ploopHelper() {
@@ -70,11 +71,8 @@ void init() {
     set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending? Type just as you would type in the CLI to run the script."));
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
-
-
-
-
-}   
+    set_property("prusias_ploop_runChrono", user_prompt("Is the Time-Twitching Tower present and do you want to run Chrono Collector after garbo nobard? 1 for yes, 0 for no."));
+}
 
 void shrugAT() {
     cli_execute("shrug Stevedave's Shanty of Superiority");
@@ -97,7 +95,6 @@ void runPvP() {
 
     //uberpvp
     cli_execute("PVP_MAB");
-
 }
 
 void augmentBreakfast() {
@@ -110,8 +107,6 @@ void augmentBreakfast() {
     //big book
     if (get_property("bankedKarma").to_int() > 2000 && available_amount($item[The Big Book of Every Skill]) > 0) 
         use(1, $item[The Big Book of Every Skill]);
-    
-
 }
 
 boolean useCombo() {
@@ -143,39 +138,39 @@ void CS_Ascension() {
 
 
     int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
-	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
+    int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
     int type = get_property("prusias_ploop_ascensionType").to_int();
-	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
-	int pathId = 25;//cs
-	int classId = get_property("prusias_ploop_classId").to_class().to_int();
+    int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
+    int pathId = 25;//cs
+    int classId = get_property("prusias_ploop_classId").to_class().to_int();
     int gender = get_property("prusias_ploop_ascendGender").to_int(); //1 boy, 2 girl
 
 
-	if (get_property("csServicesPerformed").split_string(",").count() == 11) {
-		print("attempting to enter valhalla");
-		visit_url("council.php",false,true);
-		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
-	}
-	else if (get_property("kingLiberated").to_boolean()) {
-		print("attempting to enter valhalla");
-		//abort("need url of non-CS ascension location");
-		visit_url("",false,true);
-		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
-	} else {
+    if (get_property("csServicesPerformed").split_string(",").count() == 11) {
+        print("attempting to enter valhalla");
+        visit_url("council.php",false,true);
+        visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
+    }
+    else if (get_property("kingLiberated").to_boolean()) {
+        print("attempting to enter valhalla");
+        //abort("need url of non-CS ascension location");
+        visit_url("",false,true);
+        visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
+    } else {
         print("attempt to ascend failed");
     }
 
-	if (!visit_url("charpane.php").contains_text("Astral Spirit"))
-		abort("failed to get to valhalla");
+    if (!visit_url("charpane.php").contains_text("Astral Spirit"))
+        abort("failed to get to valhalla");
 
-	//visit_url("afterlife.php?realworld=1",false,true);
-	visit_url("afterlife.php?action=pearlygates",false,true);
+    //visit_url("afterlife.php?realworld=1",false,true);
+    visit_url("afterlife.php?action=pearlygates",false,true);
 
-	//buy things
-	if (deli > 0)
-		visit_url(`afterlife.php?action=buydeli&whichitem={deli}`,true,true);
-	if (pet > 0)
-		visit_url(`afterlife.php?action=buyarmory&whichitem={pet}`,true,true);
+    //buy things
+    if (deli > 0)
+        visit_url(`afterlife.php?action=buydeli&whichitem={deli}`,true,true);
+    if (pet > 0)
+        visit_url(`afterlife.php?action=buyarmory&whichitem={pet}`,true,true);
     //perm things
     //hc perm all the skills; assumes enough karma to cover costs
     string permAll = "sc";
@@ -191,8 +186,8 @@ void CS_Ascension() {
                     visit_url(`afterlife.php?action={permAll}perm&whichskill={perm[i]}`,true,true);
         }
     }
-	//ascend
-	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1`,true,true);
+    //ascend
+    visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1`,true,true);
 
 }
 
@@ -204,7 +199,7 @@ boolean needToAcquireItem(item x) {
 void preCSrun() {
     cli_execute("garden pick");
     if (get_property("prusias_ploop_preAscendGarden") != "")
-	if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
+    if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
             cli_execute("use " + get_property("prusias_ploop_preAscendGarden"));
     use_familiar($familiar[Stooper]);
     if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
@@ -272,7 +267,7 @@ boolean yachtzeeAccess() {
 }
 
 void garboUsage(string x) {
-	print("trying to run garbo","teal");
+    print("trying to run garbo","teal");
     shrugAT();
     if (!get_property("_essentialTofuUsed").to_boolean()) {
         cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
@@ -327,14 +322,22 @@ void postRunNoGarbo() {
     cli_execute('shrug stevedave');
 }
 
-void postRun(string x) {
+void postRun() {
     postRunNoGarbo();
 
-    if (get_property("prusias_ploop_garboPostAscendWorkshed") == "")
-        garboUsage(x);
+    string garboCommand = "";
+    boolean runChrono = to_boolean(get_property("prusias_ploop_runChrono"));
+    if (runChrono == true)
+        garboCommand = "nobarf";
+
+    string postAscendWorkshed = get_property("prusias_ploop_garboPostAscendWorkshed");
+    if (postAscendWorkshed == "")
+        garboUsage(garboCommand);
     else
-        garboUsage(`workshed="` + get_property("prusias_ploop_garboPostAscendWorkshed") + `" ` + x);
-    
+        garboUsage(garboCommand + ` workshed="` + postAscendWorkshed + `"`);
+
+    if (runChrono == true)
+        cli_execute("chrono");
 }
 
 void nightcap() {
@@ -365,9 +368,9 @@ void nightcap() {
         else
             cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
     }
-	//burning cape
-	if (available_amount($item[burning cape]) > 0) {
-		cli_execute("equip burning cape");
+    //burning cape
+    if (available_amount($item[burning cape]) > 0) {
+        cli_execute("equip burning cape");
     } else if (mall_price( $item[ Burning Newspaper ] ) < (get_property("valueOfAdventure").to_int())) {
         if (available_amount($item[burning newspaper]) == 0) {
             cli_execute("buy 1 burning newspaper @" + get_property("valueOfAdventure").to_int());
@@ -376,8 +379,8 @@ void nightcap() {
         cli_execute("equip burning cape");
     }
     cli_execute("outfit " + get_property("prusias_ploop_nightcapOutfit"));
-	if (available_amount($item[burning cape]) > 0) 
-		cli_execute("equip burning cape");
+    if (available_amount($item[burning cape]) > 0) 
+        cli_execute("equip burning cape");
     
     //nightcapping
     //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
@@ -422,14 +425,22 @@ void beforeScriptRuns() {
 void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
-	    use_familiar($familiar[none]);
+        use_familiar($familiar[none]);
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
         if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
+            boolean runChrono = to_boolean(get_property("prusias_ploop_runChrono"));
+            string garboCommand = "ascend";
+            if (runChrono == true)
+				garboCommand = "nobarf " + garboCommand;))
+
             if (get_property("prusias_ploop_garboWorkshed") == "")
-                garboUsage("ascend");
+                garboUsage(garboCommand);
             else
-                garboUsage(`ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
+                garboUsage(garboCommand + ` workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
+
+            if (runChrono == true)
+                cli_execute("chrono");
         }
 
         if (!get_property('thoth19_event_list').contains_text("leg1garbo"))
@@ -467,27 +478,31 @@ void reentrantWrapper() {
     if (get_property("ascensionsToday").to_int() == 1) {
         print("In 2nd leg", "teal");
         beforeScriptRuns();
+
         //kingLiberated = true leg1 before ascending. false after ascending
         if (!get_property('kingLiberated').to_boolean()) {
             cli_execute(get_property("prusias_ploop_ascendScript"));
         }
+
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
         my_fullness() < fullness_limit() ||
         my_spleen_use() < spleen_limit() ||
         (my_adventures() > 0 && my_inebriety() <= inebriety_limit()))) {
-            postRun("");
+            postRun();
         }
+
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
+
         if (get_property('kingLiberated').to_boolean() && my_inebriety() == inebriety_limit() && my_adventures() == 0) {
             nightcap();
         }
-	if (!get_property('thoth19_event_list').contains_text("end")) {
-                addBreakpoint("end");
-		cli_execute("ptrack recap");
-	}
 
+        if (!get_property('thoth19_event_list').contains_text("end")) {
+            addBreakpoint("end");
+            cli_execute("ptrack recap");
+        }
     }
 
     cli_execute("pUpdates check ploop");

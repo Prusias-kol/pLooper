@@ -1,6 +1,7 @@
 https://github.com/Prusias-kol/pTrack main
 https://github.com/Prusias-kol/pUpdates main
 https://github.com/Loathing-Associates-Scripting-Society/garbage-collector.git release
+https://github.com/loathers/chrono-collector.git release
 https://github.com/Loathing-Associates-Scripting-Society/combo.git release
 https://github.com/soolar/CONSUME.ash/trunk/RELEASE/
 https://github.com/Loathing-Associates-Scripting-Society/UberPvPOptimizer master
