@@ -108,6 +108,9 @@ void runPvP() {
     if (item_amount($item[School of Hard Knocks Diploma]) > 0 && !get_property("_hardKnocksDiplomaUsed").to_boolean()) {
         cli_execute("use School of Hard Knocks Diploma");
     }
+    if (item_amount($item[punching mirror] > 0)) {
+        use(1, $item[punching mirror]);
+    }
 
     //uberpvp
     cli_execute("PVP_MAB");
