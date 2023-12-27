@@ -108,6 +108,17 @@ void runPvP() {
     if (item_amount($item[School of Hard Knocks Diploma]) > 0 && !get_property("_hardKnocksDiplomaUsed").to_boolean()) {
         cli_execute("use School of Hard Knocks Diploma");
     }
+	
+    item mirror = $item[punching mirror];
+    if (item_amount(mirror) > 0 && !get_property("_punchingMirrorUsed").to_boolean()) {
+        use(1, mirror);
+    }
+	
+    item fire = $item[CSA fire-starting kit];
+    if (item_amount(fire) > 0 && !get_property("_fireStartingKitUsed").to_boolean()) {
+        set_property("choiceAdventure595", "1");
+        use(1, fire);
+    }
 
     //uberpvp
     cli_execute("PVP_MAB");
