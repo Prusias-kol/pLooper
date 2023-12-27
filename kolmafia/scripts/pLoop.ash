@@ -339,7 +339,7 @@ void postRunNoGarbo() {
     if (my_mp() < 250)
         cli_execute("eat magical sausage");
     //insert asdon buffing
-    if (get_workshed() == $item[Asdon Martin keyfob]) {
+    if (get_workshed() == $item[Asdon Martin keyfob (on ring)]) {
         int numTurns = 1260; //set this value manually
         int numBuffs = numTurns/30 + 1;
         int numPies = (numBuffs * 37)/150 + 1;
