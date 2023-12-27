@@ -110,8 +110,12 @@ void runPvP() {
     }
 	
     item mirror = $item[punching mirror];
-    if (item_amount(mirror) > 0 && !get_property("_punchingMirrorUsed").to_boolean()) {
+    if (available_amount(mirror) > 0 && !get_property("_punchingMirrorUsed").to_boolean()) {
         use(1, mirror);
+    } else if (stash_amount(mirror) > 0 && !get_property("_punchingMirrorUsed").to_boolean()) {
+	cli_execute("stash take punching mirror");
+        use(1, mirror);
+	cli_execute("stash put punching mirror");
     }
 	
     item fire = $item[CSA fire-starting kit];
