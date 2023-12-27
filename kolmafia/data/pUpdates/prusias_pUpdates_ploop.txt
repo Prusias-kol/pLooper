@@ -1,4 +1,5 @@
--1	2
+-1	3
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
+3	Supports punching mirror owned personally or in your clan stash! 
