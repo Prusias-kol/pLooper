@@ -345,6 +345,14 @@ void preCSrun() {
             cli_execute("acquire 1 one-day ticket to Dinseylandfill");
     }
 
+    //potential smol pulls
+    if (get_property("prusias_ploop_pathId") == "49") {
+        if (available_amount($item[pizza of legend])  == 0)
+            cli_execute("make pizza of legend");
+        retrieve_item(1, $item[3323]);//salad fork
+        retrieve_item(1, $item[3324]);//frosty mug
+    }
+
     print("Remember to spend your pvp fights", "fuchsia");
 }
 
