@@ -61,9 +61,9 @@ void ploopHelper() {
     print_html("<b>fullday</b> - Fullday wrapper");
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
-    print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to true for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
-    print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to item id you would like to dupe");
-    print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to true if you want to spend 1 adv getting pvp fights from boxing daycare.");
+    print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
+    print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
+    print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare.");
 
     cli_execute("pUpdates check ploop");
 }
@@ -397,6 +397,18 @@ void postRunNoGarbo() {
     if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49)
         cli_execute("eat magical sausage");
     dmt_dupe();
+    //rain-doh
+    if (item_amount($item[can of Rain-Doh]) > 0) {
+        cli_execute("use can of Rain-Doh");
+    }
+    if (have_familiar($familiar[Left-Hand Man])) {
+        familiar currFam = my_familiar();
+        use_familiar($familiar[Left-Hand Man]);
+        equip($slot[familiar],$item[none]);
+        use_familiar(currFam);
+    }
+    
+
     //insert asdon buffing
     if (get_workshed() == $item[Asdon Martin keyfob (on ring)]) {
         int numTurns = 1260; //set this value manually
