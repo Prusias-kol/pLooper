@@ -45,6 +45,8 @@ prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
 prusias_ploop_yachtzeeOption = boolean
 
+prusias_ploop_pathId = int
+
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
@@ -109,6 +111,14 @@ void shrugAT() {
     cli_execute("shrug Brawnee's Anthem of Absorption");
 }
 
+string saucegeyserAll(int round, monster opp, string text) {
+    if (have_skill($skill[Saucegeyser])) {
+        return "skill Saucegeyser";
+    } else {
+        return get_ccs_action(round);
+    }
+}
+
 void dmt_dupe() {
     //prusias_ploop_tryDmtDupe = boolean
     //prusias_ploop_dmtDupeItemId = int
@@ -126,9 +136,9 @@ void dmt_dupe() {
         string itemChoice = "1&iid=" + get_property("prusias_ploop_dmtDupeItemId");
         set_property('choiceAdventure1125', itemChoice);
         cli_execute("/fam machine elf");
-        cli_execute("ccs sauceror");
+        
         while (get_property("encountersUntilDMTChoice").to_int() != 0){
-            adv1($location[The Deep Machine Tunnels], -1, "");
+            adv1($location[The Deep Machine Tunnels], -1, "saucegeyserAll");
         }
         adv1($location[The Deep Machine Tunnels], -1, "");
         set_property('choiceAdventure1119', '1');
@@ -608,10 +618,19 @@ void reentrantWrapper() {
                 cli_execute("eat * magical sausage");
             }  
             if (available_amount($item[10929]) > 0) {
-                print("sweatpants here");
+                cli_execute("cast ode to booze");
+                cli_execute("drink astral pilsner");
             }
             if (!get_property('kingLiberated').to_boolean()) {
                 visit_url("place.php?whichplace=nstower&action=ns_11_prism");
+            }
+            if (available_amount($item[10929]) > 0 && my_inebriety() > inebriety_limit()) {
+                while (get_property("_sweatOutSomeBoozeUsed").to_int() < 3) {
+                    equip($item[designer sweatpants]);
+                    use_skill(1, $skill[Sweat Out Some Booze]);
+                }
+                cli_execute("use cuppa Sobrie tea");
+                cli_execute("use synthetic dog hair pill");
             }
         }
         if (get_property('kingLiberated').to_boolean() &&
