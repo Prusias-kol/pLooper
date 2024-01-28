@@ -63,6 +63,7 @@ void ploopHelper() {
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
     print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to true for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
     print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to item id you would like to dupe");
+    print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to true if you want to spend 1 adv getting pvp fights from boxing daycare.");
 
     cli_execute("pUpdates check ploop");
 }
@@ -162,6 +163,23 @@ void runPvP() {
     if (item_amount(fire) > 0 && !get_property("_fireStartingKitUsed").to_boolean()) {
         set_property("choiceAdventure595", "1");
         use(1, fire);
+    }
+    if (get_property("prusias_ploop_useAdvForPvpAtBoxingDaycare").to_boolean() && my_adventures() > 0) {
+        visit_url("place.php?whichplace=town_wrong&action=townwrong_boxingdaycare");
+        run_choice(3); // go to daycare
+        if (get_property("_daycareRecruits").to_int() < 1) {
+        run_choice(1); // recruit toddlers for 100 meat
+        //run_choice(1); // recruit toddlers for 1000 meat
+        }
+        if (get_property("_daycareGymScavenges").to_int() < 1) {
+        run_choice(2); // free scavenge
+        }
+        if (hippy_stone_broken()) {
+            print("Getting fights", "teal");
+        run_choice(4); // get PvP fights (costs an adventure)
+        }
+        run_choice(5); // exit daycare
+        run_choice(4); // exit lobby
     }
 
     //uberpvp
