@@ -44,6 +44,10 @@ prusias_ploop_astralPet - string - item name, exact
 prusias_ploop_astralDeli - string - item name, exact
 prusias_ploop_ascendGender - int
 prusias_ploop_yachtzeeOption = boolean
+
+prusias_ploop_detectHalloween = boolean
+prusias_ploop_tryDmtDupe = boolean
+prusias_ploop_dmtDupeItemId = int
 */
 
 void ploopHelper() {
@@ -55,6 +59,10 @@ void ploopHelper() {
     //smolinit
     print_html("<b>smolinit</b> - Initializes pLooper. Mandatory for the script to work");
     print_html("<b>fullday</b> - Fullday wrapper");
+    print("Optional Preferences", "teal");
+    print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
+    print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to true for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
+    print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to item id you would like to dupe");
 
     cli_execute("pUpdates check ploop");
 }
@@ -98,6 +106,38 @@ void shrugAT() {
     cli_execute("shrug Cletus's Canticle of Celerity");
     cli_execute("shrug Jackasses' Symphony of Destruction");
     cli_execute("shrug Brawnee's Anthem of Absorption");
+}
+
+void dmt_dupe() {
+    //prusias_ploop_tryDmtDupe = boolean
+    //prusias_ploop_dmtDupeItemId = int
+    if (get_property("prusias_ploop_tryDmtDupe").to_boolean() != true || get_property("prusias_ploop_dmtDupeItemId") == "") {
+        return;
+    }
+    item itemToDupe = get_property("prusias_ploop_dmtDupeItemId").to_int().to_item();
+    cli_execute("acquire 1 " + itemToDupe.to_string());
+
+    print(get_property("lastDMTDuplication"));
+    print(get_property("encountersUntilDMTChoice"));
+    if (get_property("lastDMTDuplication").to_int() != my_ascensions()) {
+        // We can duplicate
+        set_property('choiceAdventure1119', '4');
+        string itemChoice = "1&iid=" + get_property("prusias_ploop_dmtDupeItemId");
+        set_property('choiceAdventure1125', itemChoice);
+        cli_execute("/fam machine elf");
+        cli_execute("ccs sauceror");
+        while (get_property("encountersUntilDMTChoice").to_int() != 0){
+            adv1($location[The Deep Machine Tunnels], -1, "");
+        }
+        adv1($location[The Deep Machine Tunnels], -1, "");
+        set_property('choiceAdventure1119', '1');
+    } else
+    {
+        // abort("We have done a dupe when we don't expect it");
+    }
+    if (get_property("lastDMTDuplication").to_int() != my_ascensions()) {
+        print("duplicate failed somehow","red");
+    }
 }
 
 void runPvP() {
