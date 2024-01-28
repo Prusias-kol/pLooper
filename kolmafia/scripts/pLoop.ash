@@ -594,6 +594,7 @@ void reentrantWrapper() {
         }
 
     }
+    print("Plooping Complete!", "teal");
 
     cli_execute("pUpdates check ploop");
 }
