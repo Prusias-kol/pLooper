@@ -376,8 +376,9 @@ void postRunNoGarbo() {
     retrieve_item(1,$item[bitchin' meatcar]);
     augmentBreakfast();
 
-    if (my_mp() < 250 && get_property("prusias_ploop_pathId").to_int() != 49)
+    if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49)
         cli_execute("eat magical sausage");
+    dmt_dupe();
     //insert asdon buffing
     if (get_workshed() == $item[Asdon Martin keyfob (on ring)]) {
         int numTurns = 1260; //set this value manually
