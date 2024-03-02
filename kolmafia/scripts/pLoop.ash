@@ -149,7 +149,9 @@ print("PLOOP_DUPE: attempting to dmt dupe");
     }
     if (get_property("lastDMTDuplication").to_int() != my_ascensions()) {
         print("PLOOP_DUPE: duplicate failed somehow","red");
-    }
+    } else {
+	print("PLOOP_DUPE: duplicate success");
+	}
 }
 
 void runPvP() {
