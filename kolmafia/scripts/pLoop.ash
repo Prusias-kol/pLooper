@@ -125,6 +125,7 @@ void dmt_dupe() {
     if (get_property("prusias_ploop_tryDmtDupe").to_boolean() != true || get_property("prusias_ploop_dmtDupeItemId") == "") {
         return;
     }
+print("PLOOP_DUPE: attempting to dmt dupe");
     item itemToDupe = get_property("prusias_ploop_dmtDupeItemId").to_int().to_item();
     cli_execute("acquire 1 " + itemToDupe.to_string());
 
@@ -144,10 +145,10 @@ void dmt_dupe() {
         set_property('choiceAdventure1119', '1');
     } else
     {
-        // abort("We have done a dupe when we don't expect it");
+        print("PLOOP_DUPE: Dupe already used");
     }
     if (get_property("lastDMTDuplication").to_int() != my_ascensions()) {
-        print("duplicate failed somehow","red");
+        print("PLOOP_DUPE: duplicate failed somehow","red");
     }
 }
 
