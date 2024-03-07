@@ -302,7 +302,7 @@ void CS_Ascension() {
     }
 	//ascend
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (get_property("prusias_ploop_pathId") == "49") {
+    if (pathId == 49) {
         run_choice(1); 
         visit_url('main.php');
     }
