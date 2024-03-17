@@ -2,6 +2,6 @@ https://github.com/Prusias-kol/pTrack main
 https://github.com/Prusias-kol/pUpdates main
 https://github.com/Loathing-Associates-Scripting-Society/garbage-collector.git release
 https://github.com/Loathing-Associates-Scripting-Society/combo.git release
-https://github.com/soolar/CONSUME.ash
+soolar/CONSUME.ash
 https://github.com/loathers/UberPvPOptimizer.git master
 https://github.com/Pantocyclus/PVP_MAB.git release
