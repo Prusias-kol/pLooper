@@ -632,6 +632,8 @@ void reentrantWrapper() {
             if (!get_property('kingLiberated').to_boolean()) {
                 visit_url("place.php?whichplace=nstower&action=ns_11_prism");
             }
+            cli_execute("hagnk all");
+            cli_execute("refresh all");
             if (available_amount($item[10929]) > 0 && my_inebriety() > inebriety_limit()) {
                 while (get_property("_sweatOutSomeBoozeUsed").to_int() < 3) {
                     equip($item[designer sweatpants]);
