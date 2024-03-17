@@ -46,6 +46,7 @@ prusias_ploop_ascendGender - int
 prusias_ploop_yachtzeeOption = boolean
 
 prusias_ploop_pathId = int
+prusias_ploop_preAscendAcquireList = string,string...
 
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
@@ -63,6 +64,8 @@ void ploopHelper() {
     //smolinit
     print_html("<b>smolinit</b> - Initializes pLooper. Mandatory for the script to work");
     print_html("<b>fullday</b> - Fullday wrapper");
+    print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additiional items outside README are acquired before ascension.");
+    print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter. Will be acquired right before ascension.");
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
     print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
@@ -381,6 +384,15 @@ void preCSrun() {
             cli_execute("acquire 1 wasabi marble soda");
         if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
             cli_execute("acquire 1 one-day ticket to Dinseylandfill");
+        
+        //custom acquisition list
+        foreach x, it in get_property("prusias_ploop_preAscendAcquireList").split_string('(?<!\\\\)(, |,)') {
+            it = replace_all(create_matcher(`\\\\`, it), "");
+            item acquisitionItem = it.to_item();
+            if (needToAcquireItem(acquisitionItem)) {
+                cli_execute("acquire 1 " + acquisitionItem.to_string());
+            }
+        }
     }
 
     //potential smol pulls
@@ -775,8 +787,28 @@ void reentrantHalloweenWrapper() {
     }
 }
 
+void clearAcquisitionList() {
+    set_property("prusias_ploop_preAscendAcquireList","");
+    print("Acquisition List emptied. No additional items outside those specified in README will be acquired before ascension.");
+}
+
+void addAcquisitionListItem(string itemToAdd) {
+    item it = itemToAdd.to_item();
+    if (it == $item[none]) {
+        print("Not a valid item. Double check spelling", "red");
+    } else {
+        string itemName = it.to_string();
+        itemName = replace_all(create_matcher(",",itemName),"\\\\,");
+        if (get_property("prusias_ploop_preAscendAcquireList") == "") {
+            set_property("prusias_ploop_preAscendAcquireList", itemName);
+        } else {
+            set_property("prusias_ploop_preAscendAcquireList", get_property("prusias_ploop_preAscendAcquireList") + ", " + itemName);
+        }
+    }
+}
+
 void main(string input) {
-    string [int] commands = input.split_string("\\s+");
+    string [int] commands = input.to_lower_case().split_string("\\s+");
     for(int i = 0; i < commands.count(); ++i){
         switch(commands[i]){
             case "fullday":
@@ -802,6 +834,23 @@ void main(string input) {
                 return;
             case "smolinit":
                 smolInit();
+                return;
+            case "clearacquirelist":
+                clearAcquisitionList();
+                return;
+            case "addacquirelist":
+                if(i + 1 < commands.count())
+                {
+                    i = i+1;
+                    string blacklistInput = "";
+                    while (i < commands.count()) {
+                        blacklistInput += commands[i];
+                        i++;
+                    }
+                    addAcquisitionListItem(blacklistInput);
+                } else {
+                    print("Please provide an item name as an argument.", "red");
+                }
                 return;
             default:
                 ploopHelper();
