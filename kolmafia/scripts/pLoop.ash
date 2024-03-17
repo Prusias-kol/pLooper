@@ -51,6 +51,7 @@ prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
 prusias_ploop_postRunMoonTune = int
+prusias_ploop_optOutSmoking = boolean
 */
 
 void ploopHelper() {
@@ -68,6 +69,8 @@ void ploopHelper() {
     print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
     print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare.");
     print_html("<b>prusias_ploop_postRunMoonTune</b> - Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign.");
+    print("Disables", "teal");)
+    print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
 
     cli_execute("pUpdates check ploop");
 }
@@ -242,6 +245,21 @@ void CS_Ascension() {
 
     if (!get_property('thoth19_event_list').contains_text("wineglassDone") && !get_property('thoth19_event_list').contains_text("preAscend"))
         addBreakpoint("preAscend");
+
+    if (get_property("getawayCampsiteUnlocked").to_boolean() && get_property("prusias_ploop_optOutSmoking").to_lower_case() != "true") {
+        //smoke tax
+        int tryNumSmokes = 10;
+        if (available_amount($item[stick of firewood]) < tryNumSmokes) {
+            cli_execute("buy " + tryNumSmokes + " stick of firewood @100");
+        }
+
+        int smoke = 0;
+        while(available_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
+            set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
+            use(1,$item[campfire smoke]);
+            smoke = smoke + 1;
+        }
+    }
 
 
     int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
