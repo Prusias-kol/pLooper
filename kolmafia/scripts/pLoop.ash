@@ -449,7 +449,9 @@ void postRunNoGarbo() {
     cli_execute("hagnk all");
     cli_execute("refresh all");
     //ensure beach access
-    retrieve_item(1,$item[bitchin' meatcar]);
+    if (!(available_amount($item[134]) > 0 || available_amount($item[4770]) > 0 || available_amount($item[4769]) > 0 || available_amount($item[6775]) > 0)) {
+        retrieve_item(1,$item[bitchin' meatcar]);
+    }
     augmentBreakfast();
 
     if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49)
