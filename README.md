@@ -26,6 +26,7 @@ ploop help
 - uses burning cape for RO if in price threshold
 
 ## PreRun prep
+If you want ploop to acquire an item not on this list, run ploop help to see how to add an item to its acquisition list!
 - acquires every legendary CBB pizza if in price range
 - acquires borrowed time
 - acquires non-Euclidean angle
