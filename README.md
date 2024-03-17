@@ -29,6 +29,7 @@ ploop help
 - acquires every legendary CBB pizza if in price range
 - acquires borrowed time
 - acquires non-Euclidean angle
+- acquires abstraction: Category
 - acquires tobiko marble soda
 - acquires wasabi marble soda
 - acquires one-day ticket to Dinseylandfill
