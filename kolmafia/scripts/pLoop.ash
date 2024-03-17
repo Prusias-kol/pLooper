@@ -660,8 +660,9 @@ void reentrantWrapper() {
         if (get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
             //still king not liberated
             if (available_amount($item[10058]) > 0) {
-                cli_execute("make * magical sausage");
-                cli_execute("eat * magical sausage");
+                int numToSauge = available_amount($item[]);
+                cli_execute("make " + numToSauge + " magical sausage");
+                cli_execute("eat " + numToSauge + " magical sausage");
             }  
             if (available_amount($item[10929]) > 0) {
                 cli_execute("cast ode to booze");
