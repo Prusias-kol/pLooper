@@ -373,6 +373,8 @@ void preCSrun() {
             cli_execute("acquire 1 borrowed time");
         if (needToAcquireItem($item[non-Euclidean angle]))
             cli_execute("acquire 1 non-Euclidean angle");
+        if (needToAcquireItem($item[abstraction: category]))
+            cli_execute("acquire 1 abstraction: category");
         if (needToAcquireItem($item[tobiko marble soda]))
             cli_execute("acquire 1 tobiko marble soda");
         if (needToAcquireItem($item[wasabi marble soda]))
