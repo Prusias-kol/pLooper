@@ -569,12 +569,14 @@ void nightcap() {
         if (have_familiar($familiar[Left-Hand Man])) {
             use_familiar($familiar[Left-Hand Man]);
             equip( $slot[familiar], $item[none]);
-            if (available_amount($item[8437]) > 0) //green
+            if (item_amount($item[8437]) > 0) //green
                 equip( $slot[familiar], $item[8437]);
-            if (available_amount($item[8435]) > 0) //red
+            if (item_amount($item[8435]) > 0) //red
                 equip( $slot[familiar], $item[8435]);
-            if (available_amount($item[8436]) > 0) //blue
+            if (item_amount($item[8436]) > 0) //blue
                 equip( $slot[familiar], $item[8436]);
+        } else if (item_amount($item[solid shifting time weirdness]) > 0) {
+            equip($slot[familiar], $item[solid shifting time weirdness]);
         }
         print("Nightcap was overdrunk when it shouldn't have been");
         abort();
@@ -582,12 +584,14 @@ void nightcap() {
     if (have_familiar($familiar[Left-Hand Man])) {
         use_familiar($familiar[Left-Hand Man]);
         equip( $slot[familiar], $item[none]);
-        if (available_amount($item[8437]) > 0) //green
+        if (item_amount($item[8437]) > 0) //green
             equip( $slot[familiar], $item[8437]);
-        if (available_amount($item[8435]) > 0) //red
+        if (item_amount($item[8435]) > 0) //red
             equip( $slot[familiar], $item[8435]);
-        if (available_amount($item[8436]) > 0) //blue
+        if (item_amount($item[8436]) > 0) //blue
             equip( $slot[familiar], $item[8436]);
+    } else if (item_amount($item[solid shifting time weirdness]) > 0) {
+        equip($slot[familiar], $item[solid shifting time weirdness]);
     }
     
     
