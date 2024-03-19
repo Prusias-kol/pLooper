@@ -252,17 +252,20 @@ void CS_Ascension() {
     if (get_property("getawayCampsiteUnlocked").to_boolean() && get_property("prusias_ploop_optOutSmoking").to_lower_case() != "true") {
         //smoke tax
         int tryNumSmokes = 10;
-        if (available_amount($item[stick of firewood]) < tryNumSmokes) {
+        if (item_amount($item[stick of firewood]) < tryNumSmokes) {
             cli_execute("buy " + tryNumSmokes + " stick of firewood @100");
         }
 
         int smoke = 0;
+        tryNumSmokes = min(tryNumSmokes,item_amount($item[stick of firewood]))
         cli_execute("acquire " + tryNumSmokes + " stick of firewood");
         while(item_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
-		cli_execute("acquire 1 campfire smoke");
-            set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
-            use(1,$item[campfire smoke]);
-            smoke = smoke + 1;
+            try {
+                cli_execute("acquire campfire smoke");
+                set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
+                use(1,$item[campfire smoke]);
+                smoke = smoke + 1;
+            }
         }
     }
 
