@@ -658,7 +658,7 @@ void reentrantWrapper() {
         if (!get_property('kingLiberated').to_boolean() && (get_property("prusias_ploop_pathId") != "49" || (get_property("questL13Final") != "step12" && get_property("questL13Final") != "step13" && get_property("questL13Final") != "finished")) ) {
             cli_execute(get_property("prusias_ploop_ascendScript"));
         }
-        if (get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
+        if (!get_property('kingLiberated').to_boolean() && get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
             //still king not liberated
             if (available_amount($item[10058]) > 0) {
                 int numToSauge = min(23,item_amount($item[magical sausage casing]));
