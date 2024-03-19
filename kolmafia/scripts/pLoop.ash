@@ -265,6 +265,8 @@ void CS_Ascension() {
                 set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
                 use(1,$item[campfire smoke]);
                 smoke = smoke + 1;
+            } finally {
+                //dang
             }
         }
     }
