@@ -257,7 +257,7 @@ void CS_Ascension() {
         }
 
         int smoke = 0;
-        tryNumSmokes = min(tryNumSmokes,item_amount($item[stick of firewood]))
+        tryNumSmokes = min(tryNumSmokes,item_amount($item[stick of firewood]));
         cli_execute("acquire " + tryNumSmokes + " stick of firewood");
         while(item_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
             try {
