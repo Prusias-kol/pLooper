@@ -257,7 +257,7 @@ void CS_Ascension() {
         }
 
         int smoke = 0;
-        cli_execute("acquire " + tryNumSmokes + " sticks of firewood");
+        cli_execute("acquire " + tryNumSmokes + " stick of firewood");
         while(item_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
             set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
             use(1,$item[campfire smoke]);
