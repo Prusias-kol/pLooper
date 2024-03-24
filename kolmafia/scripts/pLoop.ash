@@ -395,6 +395,7 @@ void preCSrun() {
             it = replace_all(create_matcher(`\\\\`, it), "");
             item acquisitionItem = it.to_item();
             if (needToAcquireItem(acquisitionItem)) {
+                print("Acquiring " + acquisitionItem.to_string());
                 cli_execute("acquire 1 " + acquisitionItem.to_string());
             }
         }
