@@ -688,6 +688,7 @@ void reentrantWrapper() {
                 cli_execute("use synthetic dog hair pill");
             }
             //steel liver
+		cli_execute("uneffect beaten up");
             cli_execute("ploopgoals goal organ");
         }
         if (!get_property('moonTuned').to_boolean() && get_property("prusias_ploop_postRunMoonTune") != "") {
