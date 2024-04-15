@@ -377,7 +377,7 @@ void preCSrun() {
             }
         }
 
-        if (needToAcquireItem($item[borrowed time]))
+        if (!have_skill($skill[summon clip art]) && needToAcquireItem($item[borrowed time]))
             cli_execute("acquire 1 borrowed time");
         if (needToAcquireItem($item[non-Euclidean angle]))
             cli_execute("acquire 1 non-Euclidean angle");
