@@ -433,6 +433,15 @@ boolean yachtzeeAccess() {
 
 void garboUsage(string x) {
 	print("trying to run garbo","teal");
+    if (have_familiar($familiar[Patriotic Eagle])) {
+        if (get_property("_citizenZone") != "Barf Mountain") {
+            if (have_effect($effect[citizen of a zone]) > 0) {
+                print("uneffecting eagle zone");
+                cli_execute("uneffect citizen of a zone");
+            }
+            set_property("_citizenZone", "");
+        }
+    }
     shrugAT();
     if (!get_property("_essentialTofuUsed").to_boolean()) {
         cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
