@@ -53,16 +53,22 @@ prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
 prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
+
+Script state tracking
+_prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 */
 
 void ploopHelper() {
     print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
     print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
     print("To use the script, please run ploop init before you run ploop fullday");
-    print("Commands","teal");
-    print_html("<b>init</b> - Initializes pLooper. Mandatory for the script to work");
+    print("Setup Commands","teal");
+    print_html("<b>init</b> - Initializes pLooper CS. Mandatory for the script to work");
     //smolinit
-    print_html("<b>smolinit</b> - Initializes pLooper. Mandatory for the script to work");
+    print_html("<b>smolinit</b> - Initializes pLooper for smol. Mandatory for the script to work");
+    //you, robot
+    print_html("<b>roboinit</b> - Initializes pLooper for You,Robot. Mandatory for the script to work");
+    print("Daily Commands", "teal");
     print_html("<b>fullday</b> - Fullday wrapper");
     print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additiional items outside README are acquired before ascension.");
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter. Will be acquired right before ascension.");
@@ -113,7 +119,6 @@ void robotInit() {
     set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
     set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (start of day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
-    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore. LoopRobot is for softcore"));
     set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into (LoopRobot wants Vole). 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
     set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into. LoopRobot wants Pastamancer"));
     set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
@@ -123,6 +128,7 @@ void robotInit() {
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
     set_property("prusias_ploop_pathId", "34");
+    set_property("prusias_ploop_ascensionType", "2");
 } 
 
 void shrugAT() {
@@ -369,7 +375,7 @@ void CS_Ascension() {
     }
 	//ascend
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (pathId == 49) {
+    if (pathId == 49 || pathId == 34) {
         visit_url('main.php'); while (handling_choice()) {run_choice(1);}
     }
 
@@ -737,8 +743,14 @@ void reentrantWrapper() {
                 cli_execute("use cuppa Sobrie tea");
                 cli_execute("use synthetic dog hair pill");
             }
+        }
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" || (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "34")) {
+            cli_execute("hagnk all");
+            cli_execute("refresh all");
             //steel liver
-		cli_execute("uneffect beaten up");
+		    cli_execute("uneffect beaten up");
+            print("Trying to get steel organ");
+            set_property("_prusias_ploop_got_steel_organ", "true");
             cli_execute("ploopgoals goal organ");
         }
         if (!get_property('moonTuned').to_boolean() && get_property("prusias_ploop_postRunMoonTune") != "") {
@@ -898,6 +910,9 @@ void main(string input) {
                 return;
             case "smolinit":
                 smolInit();
+                return;
+            case "roboinit":
+                robotInit();
                 return;
             case "clearacquirelist":
                 clearAcquisitionList();
