@@ -109,6 +109,22 @@ void smolInit() {
     set_property("prusias_ploop_ascensionType", "2");
 }
 
+void robotInit() {
+    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
+    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (start of day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
+    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore. LoopRobot is for softcore"));
+    set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into (LoopRobot wants Vole). 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
+    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into. LoopRobot wants Pastamancer"));
+    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
+    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
+    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
+    set_property("prusias_ploop_ascendScript", "looprobot");
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+    set_property("prusias_ploop_pathId", "34");
+} 
+
 void shrugAT() {
     cli_execute("shrug Stevedave's Shanty of Superiority");
     cli_execute("shrug Power Ballad of the Arrowsmith");
@@ -218,6 +234,31 @@ void augmentBreakfast() {
     //big book
     if (get_property("bankedKarma").to_int() > 2000 && available_amount($item[The Big Book of Every Skill]) > 0) 
         use(1, $item[The Big Book of Every Skill]);
+
+    // mayam calendar
+	if (item_amount($item[Mayam Calendar]) > 0) {
+		if (get_property("mayamSymbolsUsed") == "") {
+			// yam battery
+			cli_execute("mayam rings yam lightning yam clock");
+			// stuffed yam stinkbomb
+			cli_execute("mayam rings vessel yam cheese explosion");
+			// remainder
+			if (have_familiar($familiar[chest mimic])) {
+				// xp for chest mimic
+				use_familiar($familiar[chest mimic]);
+				cli_execute("mayam rings fur meat eyepatch yam");
+			} else {
+				// free rests for cincho/mp
+				cli_execute("mayam rings chair meat eyepatch yam");
+			}
+			
+		}
+	}
+
+    //pirates bellow
+    if (have_skill($skill[Pirate Bellow]) && !get_property("_pirateBellowUsed").to_boolean()) {
+        use_skill(1, $skill[Pirate Bellow]);
+    }
     
 
 }
