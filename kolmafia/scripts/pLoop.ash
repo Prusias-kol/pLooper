@@ -47,6 +47,7 @@ prusias_ploop_yachtzeeOption = boolean
 
 prusias_ploop_pathId = int
 prusias_ploop_preAscendAcquireList = string,string...
+prusias_ploop_preAscendClanStashAcquireList = string,string...
 
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
@@ -56,6 +57,8 @@ prusias_ploop_optOutSmoking = boolean
 
 Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
+prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
+prusias_ploop_clanStashTakenFrom - return to right clan
 */
 
 void ploopHelper() {
@@ -71,7 +74,9 @@ void ploopHelper() {
     print("Daily Commands", "teal");
     print_html("<b>fullday</b> - Fullday wrapper");
     print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additiional items outside README are acquired before ascension.");
-    print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter. Will be acquired right before ascension.");
+    print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
+    print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
+    print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
     print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
@@ -127,7 +132,7 @@ void robotInit() {
     set_property("prusias_ploop_ascendScript", "looprobot");
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
-    set_property("prusias_ploop_pathId", "34");
+    set_property("prusias_ploop_pathId", "41");
     set_property("prusias_ploop_ascensionType", "2");
 } 
 
@@ -141,11 +146,76 @@ void shrugAT() {
     cli_execute("shrug Brawnee's Anthem of Absorption");
 }
 
+boolean needToAcquireItem(item x) {
+    print("Testing ownership of " + x);
+    return (available_amount(x) + closet_amount(x) + storage_amount(x) == 0);
+}
+
 string saucegeyserAll(int round, monster opp, string text) {
     if (have_skill($skill[Saucegeyser])) {
         return "skill Saucegeyser";
     } else {
         return get_ccs_action(round);
+    }
+}
+
+void returnClanStashItems() {
+    if (get_property("prusias_ploop_takenFromClanStashItems") == "") {
+        return;
+    }
+    string currClan = get_clan_name();
+    cli_execute("/whitelist " + get_property("prusias_ploop_clanStashTakenFrom"));
+    cli_execute("outfit Birthday Suit");
+    //left hand man
+    if (have_familiar($familiar[Left-Hand Man])) {
+        familiar currFam = my_familiar();
+        use_familiar($familiar[Left-Hand Man]);
+        equip($slot[familiar],$item[none]);
+        use_familiar(currFam);
+    }
+    //disembodied hand
+    if (have_familiar($familiar[Disembodied Hand])) {
+        familiar currFam = my_familiar();
+        use_familiar($familiar[Disembodied Hand]);
+        equip($slot[familiar],$item[none]);
+        use_familiar(currFam);
+    }
+    //Fancypants Scarecrow
+    if (have_familiar($familiar[Fancypants Scarecrow])) {
+        familiar currFam = my_familiar();
+        use_familiar($familiar[Fancypants Scarecrow]);
+        equip($slot[familiar],$item[none]);
+        use_familiar(currFam);
+    }
+    foreach x, it in get_property("prusias_ploop_takenFromClanStashItems").split_string('(?<!\\\\)(, |,)') {
+            it = replace_all(create_matcher(`\\\\`, it), "");
+            item acquisitionItem = it.to_item();
+            cli_execute("refresh stash");
+            if (acquisitionItem != $item[none] && !needToAcquireItem(acquisitionItem)) {
+                print("Returning " + acquisitionItem.to_string());
+                cli_execute("stash put " + acquisitionItem.to_string());
+            }
+        }
+    set_property("prusias_ploop_takenFromClanStashItems", "");
+    set_property("prusias_ploop_clanStashTakenFrom", "");
+    print("Clan stash items returned to stash");
+}
+
+//helper func for tracking
+void addClanStashAcquiredTracking(string itemToAdd) {
+    set_property("prusias_ploop_clanStashTakenFrom", get_clan_name());
+    item it = itemToAdd.to_item();
+    if (it == $item[none]) {
+        print("Not a valid item. Double check spelling", "red");
+    } else {
+        string itemName = it.to_string();
+        cli_execute("stash take " + itemName);
+        itemName = replace_all(create_matcher(",",itemName),"\\\\,");
+        if (get_property("prusias_ploop_takenFromClanStashItems") == "") {
+            set_property("prusias_ploop_takenFromClanStashItems", itemName);
+        } else {
+            set_property("prusias_ploop_takenFromClanStashItems", get_property("prusias_ploop_takenFromClanStashItems") + ", " + itemName);
+        }
     }
 }
 
@@ -375,17 +445,10 @@ void CS_Ascension() {
     }
 	//ascend
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (pathId == 49 || pathId == 34) {
+    if (pathId == 49 || pathId == 41) {
         visit_url('main.php'); while (handling_choice()) {run_choice(1);}
     }
 
-}
-
-
-
-boolean needToAcquireItem(item x) {
-    print("Testing ownership of " + x);
-    return (available_amount(x) + closet_amount(x) + storage_amount(x) == 0);
 }
 
 void preCSrun() {
@@ -444,6 +507,16 @@ void preCSrun() {
             if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem)) {
                 print("Acquiring " + acquisitionItem.to_string());
                 cli_execute("acquire 1 " + acquisitionItem.to_string());
+            }
+        }
+        //clan stash acquisition list prusias_ploop_preAscendClanStashAcquireList
+        foreach x, it in get_property("prusias_ploop_preAscendClanStashAcquireList").split_string('(?<!\\\\)(, |,)') {
+            it = replace_all(create_matcher(`\\\\`, it), "");
+            item acquisitionItem = it.to_item();
+            cli_execute("refresh stash");
+            if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem) && stash_amount(acquisitionItem) > 0) {
+                print("Acquiring from stash " + acquisitionItem.to_string());
+                addClanStashAcquiredTracking(acquisitionItem.to_string());
             }
         }
     }
@@ -744,7 +817,7 @@ void reentrantWrapper() {
                 cli_execute("use synthetic dog hair pill");
             }
         }
-        if (get_property("_prusias_ploop_got_steel_organ") != "true" || (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "34")) {
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" || (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
             cli_execute("hagnk all");
             cli_execute("refresh all");
             //steel liver
@@ -761,6 +834,7 @@ void reentrantWrapper() {
                 visit_url('inv_use.php?whichitem=10254&doit=96&whichsign='+postrunTuneMoon);
             }
         }
+        returnClanStashItems();
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
         my_fullness() < fullness_limit() ||
@@ -868,6 +942,11 @@ void clearAcquisitionList() {
     print("Acquisition List emptied. No additional items outside those specified in README will be acquired before ascension.");
 }
 
+void clearClanStashAcquireList() {
+    set_property("prusias_ploop_preAscendClanStashAcquireList", "");
+    print("Clan stash acquisition list emptied. No items will be attempted to be pulled from clan stash before ascension.");
+}
+
 void addAcquisitionListItem(string itemToAdd) {
     item it = itemToAdd.to_item();
     if (it == $item[none]) {
@@ -879,6 +958,21 @@ void addAcquisitionListItem(string itemToAdd) {
             set_property("prusias_ploop_preAscendAcquireList", itemName);
         } else {
             set_property("prusias_ploop_preAscendAcquireList", get_property("prusias_ploop_preAscendAcquireList") + ", " + itemName);
+        }
+    }
+}
+
+void addClanStashAcquireItem(string itemToAdd) {
+    item it = itemToAdd.to_item();
+    if (it == $item[none]) {
+        print("Not a valid item. Double check spelling", "red");
+    } else {
+        string itemName = it.to_string();
+        itemName = replace_all(create_matcher(",",itemName),"\\\\,");
+        if (get_property("prusias_ploop_preAscendClanStashAcquireList") == "") {
+            set_property("prusias_ploop_preAscendClanStashAcquireList", itemName);
+        } else {
+            set_property("prusias_ploop_preAscendClanStashAcquireList", get_property("prusias_ploop_preAscendClanStashAcquireList") + ", " + itemName);
         }
     }
 }
@@ -923,10 +1017,28 @@ void main(string input) {
                     i = i+1;
                     string blacklistInput = "";
                     while (i < commands.count()) {
-                        blacklistInput += commands[i];
+                        blacklistInput += commands[i] + " ";
                         i++;
                     }
                     addAcquisitionListItem(blacklistInput);
+                } else {
+                    print("Please provide an item name as an argument.", "red");
+                }
+                return;
+            case "clearclanstashlist":
+                clearClanStashAcquireList();
+                return;
+            case "addclanstashlist":
+                if(i + 1 < commands.count())
+                {
+                    i = i+1;
+                    string clanStashInput = "";
+                    while (i < commands.count()) {
+                        clanStashInput += commands[i] + " ";
+                        i++;
+                    }
+                    print(clanStashInput);
+                    addClanStashAcquireItem(clanStashInput);
                 } else {
                     print("Please provide an item name as an argument.", "red");
                 }
