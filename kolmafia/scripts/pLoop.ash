@@ -313,7 +313,7 @@ void augmentBreakfast() {
 
     // mayam calendar
 	if (item_amount($item[Mayam Calendar]) > 0) {
-		if (get_property("mayamSymbolsUsed") == "") {
+		if (get_property("_mayamSymbolsUsed") == "") {
 			// yam battery
 			cli_execute("mayam rings yam lightning yam clock");
 			// stuffed yam stinkbomb
@@ -817,7 +817,7 @@ void reentrantWrapper() {
                 cli_execute("use synthetic dog hair pill");
             }
         }
-        if (get_property("_prusias_ploop_got_steel_organ") != "true" || (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
             cli_execute("hagnk all");
             cli_execute("refresh all");
             //steel liver
