@@ -817,6 +817,9 @@ void reentrantWrapper() {
                 cli_execute("use synthetic dog hair pill");
             }
         }
+        if (!get_property('kingLiberated').to_boolean()) {
+            visit_url("place.php?whichplace=nstower&action=ns_11_prism");
+        }
         if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
             cli_execute("hagnk all");
             cli_execute("refresh all");
