@@ -1,7 +1,9 @@
--1	5
+-1	7
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
 3	Supports punching mirror owned personally or in your clan stash! 
 4	Spends 1k meat per day trying to replenish kingdom smoke supply for loop scripts. Do ploop help if you want to disable! 
 5	MAJOR FEATURES: Now supports custom item list of things to try to acquire before ascending. Do ploop help to check it out!
+6	MAJOR PATH SUPPORT: Supports You,Robot looping with Kasekopf's script 
+7	New optional pref to set nightcap MPA for those who had an MPA so high, CONSUME was overcapping them. 
