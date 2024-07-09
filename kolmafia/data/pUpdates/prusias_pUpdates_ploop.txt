@@ -6,4 +6,4 @@
 4	Spends 1k meat per day trying to replenish kingdom smoke supply for loop scripts. Do ploop help if you want to disable! 
 5	MAJOR FEATURES: Now supports custom item list of things to try to acquire before ascending. Do ploop help to check it out!
 6	MAJOR PATH SUPPORT: Supports You,Robot looping with Kasekopf's script 
-7	New optional pref to set nightcap MPA for those who had an MPA so high, CONSUME was overcapping them. 
+7	New optional pref (prusias_ploop_nightcapMPA) to set nightcap MPA for those who had an MPA so high, CONSUME was overcapping them. 
