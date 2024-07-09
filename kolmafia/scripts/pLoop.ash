@@ -33,6 +33,7 @@ Hard requirements
 /*
 prusias_ploop_homeClan - string
 prusias_ploop_garboWorkshed - string
+prusias_ploop_workshedItemAfterLoopScript - string
 prusias_ploop_garboPostAscendWorkshed - string
 prusias_ploop_ascendScript - string
 prusias_ploop_nightcapOutfit - string
@@ -130,6 +131,7 @@ void robotInit() {
     set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
     set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
     set_property("prusias_ploop_ascendScript", "looprobot");
+    set_property("prusias_ploop_workshedItemAfterLoopScript", user_prompt("Looprobot doesn't use a workshed. What workshed would you like to use after looprobot finishes? You will be prompted for a 2nd workshed for garbo to swap to after this."));
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
     set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
     set_property("prusias_ploop_pathId", "41");
@@ -826,6 +828,12 @@ void reentrantWrapper() {
             //steel liver
 		    cli_execute("uneffect beaten up");
             print("Trying to get steel organ");
+            if (my_adventures() < 10) {
+                if (item_amount($item[astral pilsner]) > 0) {
+                    cli_execute("cast ode to booze");
+                    cli_execute("drink astral pilsner");
+                }
+            }
             set_property("_prusias_ploop_got_steel_organ", "true");
             cli_execute("ploopgoals goal organ");
         }
@@ -838,6 +846,9 @@ void reentrantWrapper() {
             }
         }
         returnClanStashItems();
+        if (!get_property("_workshedItemUsed").to_boolean()) {
+            cli_execute("use " + get_property("prusias_ploop_workshedItem"));
+        }
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
         my_fullness() < fullness_limit() ||
