@@ -55,6 +55,7 @@ prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
 prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
+prusias_ploop_nightcapMPA = int
 
 Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
@@ -84,6 +85,7 @@ void ploopHelper() {
     print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
     print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare.");
     print_html("<b>prusias_ploop_postRunMoonTune</b> - Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign.");
+    print_html("<b>prusias_ploop_nightcapMPA</b> - False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
 
@@ -701,7 +703,11 @@ void nightcap() {
     //nightcapping
     //cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("valueOfAdventure").to_int());
     if (my_inebriety() == inebriety_limit()) {
-        cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
+        if (get_property("prusias_ploop_nightcapMPA") == "" || get_property("prusias_ploop_nightcapMPA").to_string().to_lower_case() == "false") {
+            cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()));
+        } else {
+            cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("prusias_ploop_nightcapMPA").to_int());
+        }
     } else {
         if (have_familiar($familiar[Left-Hand Man])) {
             use_familiar($familiar[Left-Hand Man]);
