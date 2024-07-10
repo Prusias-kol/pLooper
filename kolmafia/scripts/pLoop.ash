@@ -50,6 +50,8 @@ prusias_ploop_pathId = int
 prusias_ploop_preAscendAcquireList = string,string...
 prusias_ploop_preAscendClanStashAcquireList = string,string...
 
+prusias_ploop_alwaysPvP = boolean
+prusias_ploop_leg1PvP = boolean
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
@@ -80,6 +82,8 @@ void ploopHelper() {
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
     print("Optional Preferences", "teal");
+    print_html("<b>prusias_ploop_alwaysPvP</b> - Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO.");
+    print_html("<b>prusias_ploop_leg1PvP</b> - Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo.");
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
     print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
     print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
@@ -229,7 +233,7 @@ void dmt_dupe() {
     if (get_property("prusias_ploop_tryDmtDupe").to_boolean() != true || get_property("prusias_ploop_dmtDupeItemId") == "") {
         return;
     }
-print("PLOOP_DUPE: attempting to dmt dupe");
+    print("PLOOP_DUPE: attempting to dmt dupe");
     item itemToDupe = get_property("prusias_ploop_dmtDupeItemId").to_int().to_item();
     cli_execute("acquire 1 " + itemToDupe.to_string());
 
@@ -281,7 +285,8 @@ void runPvP() {
         set_property("choiceAdventure595", "1");
         use(1, fire);
     }
-    if (get_property("prusias_ploop_useAdvForPvpAtBoxingDaycare").to_boolean() && my_adventures() > 0) {
+    //only do if haven't done yet today
+    if (get_property("prusias_ploop_useAdvForPvpAtBoxingDaycare").to_boolean() && my_adventures() > 0 && !get_property("_daycareFights").to_boolean()) {
         visit_url("place.php?whichplace=town_wrong&action=townwrong_boxingdaycare");
         run_choice(3); // go to daycare
         if (get_property("_daycareRecruits").to_int() < 1) {
@@ -649,6 +654,26 @@ void postRun(string x) {
     
 }
 
+void nightcapFamiliar() {
+    if (have_familiar($familiar[Trick-or-Treating Tot])) {
+        use_familiar($familiar[Trick-or-Treating Tot]);
+        equip( $slot[familiar], $item[none]);
+        cli_execute("acquire li'l unicorn costume");
+        equip( $slot[familiar], $item[li'l unicorn costume]);
+    } else if (have_familiar($familiar[Left-Hand Man])) {
+        use_familiar($familiar[Left-Hand Man]);
+        equip( $slot[familiar], $item[none]);
+        if (item_amount($item[8437]) > 0) //green
+            equip( $slot[familiar], $item[8437]);
+        if (item_amount($item[8435]) > 0) //red
+            equip( $slot[familiar], $item[8435]);
+        if (item_amount($item[8436]) > 0) //blue
+            equip( $slot[familiar], $item[8436]);
+    } else if (item_amount($item[solid shifting time weirdness]) > 0) {
+        equip($slot[familiar], $item[solid shifting time weirdness]);
+    }
+}
+
 void nightcap() {
     //Handle maids
     int profitOffset = 100;
@@ -676,6 +701,9 @@ void nightcap() {
             cli_execute("drink stillsuit distillate");
         else
             cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
+    }
+    if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
+        runPvP();
     }
 	//burning cape
 	if (available_amount($item[burning cape]) > 0) {
@@ -709,38 +737,12 @@ void nightcap() {
             cli_execute("CONSUME ALL NIGHTCAP VALUE " + get_property("prusias_ploop_nightcapMPA").to_int());
         }
     } else {
-        if (have_familiar($familiar[Left-Hand Man])) {
-            use_familiar($familiar[Left-Hand Man]);
-            equip( $slot[familiar], $item[none]);
-            if (item_amount($item[8437]) > 0) //green
-                equip( $slot[familiar], $item[8437]);
-            if (item_amount($item[8435]) > 0) //red
-                equip( $slot[familiar], $item[8435]);
-            if (item_amount($item[8436]) > 0) //blue
-                equip( $slot[familiar], $item[8436]);
-        } else if (item_amount($item[solid shifting time weirdness]) > 0) {
-            equip($slot[familiar], $item[solid shifting time weirdness]);
-        }
+        nightcapFamiliar();
         print("Nightcap was overdrunk when it shouldn't have been");
         abort();
     }
-    if (have_familiar($familiar[Left-Hand Man])) {
-        use_familiar($familiar[Left-Hand Man]);
-        equip( $slot[familiar], $item[none]);
-        if (item_amount($item[8437]) > 0) //green
-            equip( $slot[familiar], $item[8437]);
-        if (item_amount($item[8435]) > 0) //red
-            equip( $slot[familiar], $item[8435]);
-        if (item_amount($item[8436]) > 0) //blue
-            equip( $slot[familiar], $item[8436]);
-    } else if (have_familiar($familiar[Trick-or-Treating Tot])) {
-        use_familiar($familiar[Trick-or-Treating Tot]);
-        equip( $slot[familiar], $item[none]);
-        cli_execute("acquire li'l unicorn costume");
-        equip( $slot[familiar], $item[li'l unicorn costume]);
-    } else if (item_amount($item[solid shifting time weirdness]) > 0) {
-        equip($slot[familiar], $item[solid shifting time weirdness]);
-    }
+    nightcapFamiliar();
+    
     
     
 }
@@ -756,6 +758,11 @@ void beforeScriptRuns() {
 void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
+        //break hippy stone if leg 1
+        if (get_property("prusias_ploop_leg1PvP").to_boolean()) {
+            if (!hippy_stone_broken())
+                visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
+        }
 	    use_familiar($familiar[none]);
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
@@ -1011,6 +1018,11 @@ void main(string input) {
     if (get_property("prusias_ploop_preHalloweenMPA") != "" && get_property("valueOfAdventure").to_int() == 9999) {
         set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
         set_property("prusias_ploop_preHalloweenMPA", "");
+    }
+    //break hippy stone if always pvp
+    if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
+        if (!hippy_stone_broken())
+            visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
     }
     string [int] commands = input.to_lower_case().split_string("\\s+");
     for(int i = 0; i < commands.count(); ++i){
