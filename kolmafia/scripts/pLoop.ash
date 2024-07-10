@@ -917,6 +917,7 @@ void reentrantHalloweenWrapper() {
             } else {
                 print("Still adventures left over after", "red");
                 set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                set_property("prusias_ploop_preHalloweenMPA", "");
                 abort();
             }
         } else {
@@ -957,6 +958,7 @@ void reentrantHalloweenWrapper() {
 		cli_execute("ptrack recap");
 	}
     set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+    set_property("prusias_ploop_preHalloweenMPA", "");
     }
 }
 
@@ -1001,6 +1003,10 @@ void addClanStashAcquireItem(string itemToAdd) {
 }
 
 void main(string input) {
+    if (get_property("prusias_ploop_preHalloweenMPA") != "" && get_property("valueOfAdventure").to_int() == 9999) {
+        set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+        set_property("prusias_ploop_preHalloweenMPA", "");
+    }
     string [int] commands = input.to_lower_case().split_string("\\s+");
     for(int i = 0; i < commands.count(); ++i){
         switch(commands[i]){
@@ -1015,6 +1021,7 @@ void main(string input) {
                         set_property("valueOfAdventure", "9999");
                         reentrantHalloweenWrapper();
                         set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                        set_property("prusias_ploop_preHalloweenMPA", "");
                     } else {
                         reentrantWrapper();
                     }
