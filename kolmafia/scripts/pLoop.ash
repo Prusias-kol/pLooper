@@ -733,6 +733,11 @@ void nightcap() {
             equip( $slot[familiar], $item[8435]);
         if (item_amount($item[8436]) > 0) //blue
             equip( $slot[familiar], $item[8436]);
+    } else if (have_familiar($familiar[Trick-or-Treating Tot])) {
+        use_familiar($familiar[Trick-or-Treating Tot]);
+        equip( $slot[familiar], $item[none]);
+        cli_execute("acquire li'l unicorn costume");
+        equip( $slot[familiar], $item[li'l unicorn costume]);
     } else if (item_amount($item[solid shifting time weirdness]) > 0) {
         equip($slot[familiar], $item[solid shifting time weirdness]);
     }
@@ -755,7 +760,7 @@ void reentrantWrapper() {
         if (!get_property("breakfastCompleted").to_boolean())
             augmentBreakfast();
         if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
-            if (get_property("prusias_ploop_garboWorkshed") == "")
+            if (get_property("prusias_ploop_garboWorkshed") == "" || get_property("_workshedItemUsed").to_boolean())
                 garboUsage("ascend");
             else
                 garboUsage(`ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
