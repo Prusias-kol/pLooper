@@ -835,6 +835,9 @@ void reentrantWrapper() {
 		    cli_execute("uneffect beaten up");
             print("Trying to get steel organ");
             if (my_adventures() < 10) {
+		if (item_amount($item[astral six-pack]) > 0) {
+		    cli_execute("use astral six-pack");
+		}
                 if (item_amount($item[astral pilsner]) > 0) {
                     cli_execute("cast ode to booze");
                     cli_execute("drink astral pilsner");
