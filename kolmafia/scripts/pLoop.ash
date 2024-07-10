@@ -856,7 +856,7 @@ void reentrantWrapper() {
         }
         returnClanStashItems();
         if (!get_property("_workshedItemUsed").to_boolean()) {
-            cli_execute("use " + get_property("prusias_ploop_workshedItem"));
+            cli_execute("use " + get_property("prusias_ploop_workshedItemAfterLoopScript"));
         }
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
