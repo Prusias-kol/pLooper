@@ -58,6 +58,8 @@ prusias_ploop_dmtDupeItemId = int
 prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
 prusias_ploop_nightcapMPA = int
+prusias_ploop_garboAdditionalArg = string
+prusias_ploop_breakfastAdditionalScript = string
 
 Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
@@ -90,6 +92,8 @@ void ploopHelper() {
     print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare.");
     print_html("<b>prusias_ploop_postRunMoonTune</b> - Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign.");
     print_html("<b>prusias_ploop_nightcapMPA</b> - False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap.");
+    print_html("<b>prusias_ploop_garboAdditionalArg</b> - Additional argument to pass to garbo.");
+    print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
 
@@ -344,6 +348,11 @@ void augmentBreakfast() {
     if (have_skill($skill[Pirate Bellow]) && !get_property("_pirateBellowUsed").to_boolean()) {
         use_skill(1, $skill[Pirate Bellow]);
     }
+
+    // pref for custom script
+    if (get_property("prusias_ploop_breakfastAdditionalScript") != "") {
+        cli_execute(get_property("prusias_ploop_breakfastAdditionalScript"));
+    }
     
 
 }
@@ -582,10 +591,14 @@ void garboUsage(string x) {
         cli_execute("use Glenn's golden dice");
     if (!get_property("_lodestoneUsed").to_boolean() && available_amount($item[lodestone]) > 0)
         cli_execute("use lodestone");
+    string garboString = "garbo candydish";
     if (yachtzeeAccess())
-        cli_execute("garbo candydish yachtzeechain " + x);
-    else
-        cli_execute("garbo candydish " + x);
+        garboString += " yachtzeechain";
+    if (x != "")
+        garboString += " " + x;
+    if (get_property("prusias_ploop_garboAdditionalArg") != "")
+        garboString += " " + get_property("prusias_ploop_garboAdditionalArg");
+    cli_execute(garboString);
 }
 
 void postRunNoGarbo() {
@@ -846,10 +859,10 @@ void reentrantWrapper() {
             //steel liver
 		    cli_execute("uneffect beaten up");
             print("Trying to get steel organ");
-            if (my_adventures() < 10) {
-		if (item_amount($item[astral six-pack]) > 0) {
-		    cli_execute("use astral six-pack");
-		}
+            if (my_adventures() < 15) {
+                if (item_amount($item[astral six-pack]) > 0) {
+                    cli_execute("use astral six-pack");
+                }
                 if (item_amount($item[astral pilsner]) > 0) {
                     cli_execute("cast ode to booze");
                     cli_execute("drink astral pilsner");
