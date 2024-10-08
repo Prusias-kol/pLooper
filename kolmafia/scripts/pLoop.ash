@@ -890,6 +890,8 @@ void reentrantWrapper() {
         my_fullness() < fullness_limit() ||
         my_spleen_use() < spleen_limit() ||
         (my_adventures() > 0 && my_inebriety() <= inebriety_limit()))) {
+            if (!get_property("breakfastCompleted").to_boolean())
+                augmentBreakfast();
             postRun("");
         }
         if (!get_property("breakfastCompleted").to_boolean())
