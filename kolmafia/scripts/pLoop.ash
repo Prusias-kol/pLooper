@@ -83,6 +83,8 @@ void ploopHelper() {
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
+    print_html("<b>pirateRealmEnable</b> - Enables fishing for Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet!</b>");
+    print_html("<b>pirateRealmDisable</b> - Disables fishing for Trash Island and garbo targetting cockroaches.");
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_alwaysPvP</b> - Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO.");
     print_html("<b>prusias_ploop_leg1PvP</b> - Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo.");
@@ -1041,9 +1043,9 @@ void main(string input) {
         if (!hippy_stone_broken())
             visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
     }
-    string [int] commands = input.to_lower_case().split_string("\\s+");
+    string [int] commands = input.split_string("\\s+");
     for(int i = 0; i < commands.count(); ++i){
-        switch(commands[i]){
+        switch(commands[i].to_lower_case()){
             case "fullday":
                 if (get_property("prusias_ploop_ascendScript") == "") {
                     ploopHelper();
@@ -1106,6 +1108,14 @@ void main(string input) {
                 } else {
                     print("Please provide an item name as an argument.", "red");
                 }
+                return;
+            case "piraterealmenable":
+                set_property("prusias_ploop_garboAdditionalArg", `target="cockroach"`);
+                set_property("prusias_ploop_breakfastAdditionalScript", "tapion_praccess");
+                return;
+            case "piraterealmdisable":
+                set_property("prusias_ploop_garboAdditionalArg", ``);
+                set_property("prusias_ploop_breakfastAdditionalScript", "");
                 return;
             default:
                 ploopHelper();

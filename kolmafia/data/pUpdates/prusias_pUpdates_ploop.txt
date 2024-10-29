@@ -1,4 +1,4 @@
--1	8
+-1	9
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
@@ -8,3 +8,4 @@
 6	MAJOR PATH SUPPORT: Supports You,Robot looping with Kasekopf's script 
 7	New optional pref (prusias_ploop_nightcapMPA) to set nightcap MPA for those who had an MPA so high, CONSUME was overcapping them. 
 8	Two new additional optional preferences listed in ploop help. Lets you add a personal script to your breakfast and modify garbo arguments whenever garbo is called. 
+9	New command to access PirateRealm and run garbo targetting cockroaches. Thanks Tapion! Requires PirateRealm Membership Packet.
