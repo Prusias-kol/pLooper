@@ -273,7 +273,7 @@ void dmt_dupe() {
 	}
 }
 
-void runPvP() {
+void prepPvp() {
     //break stone
     if (!hippy_stone_broken())
         visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
@@ -314,10 +314,6 @@ void runPvP() {
         run_choice(5); // exit daycare
         run_choice(4); // exit lobby
     }
-
-    //uberpvp
-    cli_execute("PVP_MAB");
-
 }
 
 void augmentBreakfast() {
@@ -736,7 +732,8 @@ void nightcap() {
             cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
     }
     if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
-        runPvP();
+        prepPvp();
+        cli_execute("PVP_MAB");
     }
 	//burning cape
 	if (available_amount($item[burning cape]) > 0) {
@@ -792,7 +789,8 @@ void reentrantWrapper() {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
         //break hippy stone if leg 1
-        if (get_property("prusias_ploop_leg1PvP").to_boolean()) {
+        if (get_property("prusias_ploop_leg1PvP").to_boolean()
+                || get_property("prusias_ploop_alwaysPvP").to_boolean()) {
             if (!hippy_stone_broken())
                 visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
         }
@@ -814,14 +812,17 @@ void reentrantWrapper() {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME ALL NIGHTCAP VALUE " + (get_property("valueOfAdventure").to_int()/2));
-                 runPvP();
+                 prepPvp();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
                 garboUsage("ascend");
             }
             if (!get_property('thoth19_event_list').contains_text("wineglassDone"))
                 addBreakpoint("wineglassDone");
+            if (pvp_attacks_left() > 0) {
+                cli_execute("PVP_MAB");
+            }
             if (my_adventures() == 0) {
-                runPvP();
+                prepPvp();
                 CS_Ascension();
             } else {
                 print("Still adventures left over after", "red");
@@ -834,7 +835,7 @@ void reentrantWrapper() {
             if (!useCombo()) {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
-            runPvP();
+            prepPvp();
             CS_Ascension();
         }
     }
@@ -953,15 +954,17 @@ void reentrantHalloweenWrapper() {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
                 cli_execute("CONSUME ALL NIGHTCAP VALUE 9999");
-                runPvP();
+                prepPvp();
             if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
                 cli_execute("freecandy");
                 garboUsage("ascend");
             }
             if (!get_property('thoth19_event_list').contains_text("spookyWineglassDone"))
                 addBreakpoint("spookyWineglassDone");
+            if (pvp_attacks_left() > 0) {
+                cli_execute("PVP_MAB");
+            }
             if (my_adventures() == 0) {
-                runPvP();
                 CS_Ascension();
             } else {
                 print("Still adventures left over after", "red");
@@ -976,7 +979,10 @@ void reentrantHalloweenWrapper() {
             if (!useCombo()) {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
-            runPvP();
+            if (pvp_attacks_left() > 0) {
+                prepPvp();
+                cli_execute("PVP_MAB");
+            }
             CS_Ascension();
         }
     }
