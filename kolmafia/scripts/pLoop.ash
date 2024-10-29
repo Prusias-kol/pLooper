@@ -85,6 +85,12 @@ void ploopHelper() {
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
     print_html("<b>pirateRealmEnable</b> - Enables fishing for Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet!</b>");
     print_html("<b>pirateRealmDisable</b> - Disables fishing for Trash Island and garbo targetting cockroaches.");
+    print("Ploop's Configurable Settings", "teal");
+    print_html("<b>options</b> - See optional preferences you can set and configure");
+    cli_execute("pUpdates check ploop");
+}
+
+void optional_help_info() {
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_alwaysPvP</b> - Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO.");
     print_html("<b>prusias_ploop_leg1PvP</b> - Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo.");
@@ -99,7 +105,6 @@ void ploopHelper() {
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
 
-    cli_execute("pUpdates check ploop");
 }
 
 void init() {
@@ -1116,6 +1121,10 @@ void main(string input) {
             case "piraterealmdisable":
                 set_property("prusias_ploop_garboAdditionalArg", ``);
                 set_property("prusias_ploop_breakfastAdditionalScript", "");
+                return;
+            case "options":
+            case "option":
+                optional_help_info();
                 return;
             default:
                 ploopHelper();
