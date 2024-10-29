@@ -52,6 +52,8 @@ prusias_ploop_preAscendClanStashAcquireList = string,string...
 
 prusias_ploop_alwaysPvP = boolean
 prusias_ploop_leg1PvP = boolean
+prusias_ploop_disableOffhandRemakrable = boolean
+
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
@@ -104,6 +106,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
+    print_html("<b>prusias_ploop_disableOffhandRemakrable</b> - Set to true to disable casting offhand remarkable on rollover");
 
 }
 
@@ -671,7 +674,8 @@ void postRun(string x) {
 }
 
 void nightcapFamiliar() {
-    if (have_skill($skill[7464]) && !get_property("_aug13Cast").to_boolean() && get_property("_augSkillsCast").to_int() < 5) {
+    if (!get_property("").to_boolean() 
+            && have_skill($skill[7464]) && !get_property("_aug13Cast").to_boolean() && get_property("_augSkillsCast").to_int() < 5) {
         use_skill($skill[7464]);
     }
     if (have_effect($effect[Offhand Remarkable]) > 0
