@@ -675,7 +675,20 @@ void postRun(string x) {
 }
 
 void nightcapFamiliar() {
-    if (have_familiar($familiar[Trick-or-Treating Tot])) {
+    if (have_skill($skill[7464]) && !get_property("_aug13Cast").to_boolean() && get_property("_augSkillsCast").to_int() < 5) {
+        use_skill($skill[7464]);
+    }
+    if (have_effect($effect[Offhand Remarkable]) > 0
+            && have_familiar($familiar[Left-Hand Man])) {
+        use_familiar($familiar[Left-Hand Man]);
+        equip( $slot[familiar], $item[none]);
+        if (item_amount($item[8437]) > 0) //green
+            equip( $slot[familiar], $item[8437]);
+        if (item_amount($item[8435]) > 0) //red
+            equip( $slot[familiar], $item[8435]);
+        if (item_amount($item[8436]) > 0) //blue
+            equip( $slot[familiar], $item[8436]);
+    } else if (have_familiar($familiar[Trick-or-Treating Tot])) {
         use_familiar($familiar[Trick-or-Treating Tot]);
         equip( $slot[familiar], $item[none]);
         cli_execute("acquire li'l unicorn costume");
