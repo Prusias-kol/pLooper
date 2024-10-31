@@ -1,3 +1,5 @@
+import <lowerstats.ash>
+
 string CrabFight = "if hasskill sing along; skill sing along;endif;if hasskill furious wallop;skill furious wallop;endif;if hasskill saucegeyser;skill saucegeyser;endif;attack with your weapon;repeat";
 string Windy = "if hascombatitem windicle;use windicle;endif;if hasskill sing along; skill sing along;endif;if hasskill furious wallop;skill furious wallop;endif;if hasskill saucegeyser;skill saucegeyser;endif;attack with your weapon;repeat";
 
@@ -38,28 +40,7 @@ void main() {
 			cli_execute("equip acc2 HOA zombie eyes");
 		}
 	}
-	foreach eff in $effects[
-        Spit Upon,
-        Triple-Sized, 
-		Feeling Excited,
-		In the 'zone zone!,
-		Confidence of the Votive,
-		Pomp & Circumsands,
-		Uncucumbered,
-		Gummiheart,
-		For Your Brain Only,
-		Okee-Dokee Computer,
-		Punch Another Day,
-		License to Punch
-	]
-	{
-		foreach st in $stats[] {
-			if ((my_buffedstat(st).to_int() >= 100) && (have_effect(eff) != 0))
-			{
-				cli_execute("shrug " + eff);
-			}
-		}
-	}
+	keepStatsLow();
 	foreach st in $stats[] {
 		if (my_buffedstat(st).to_int() >= 100)
 		{
