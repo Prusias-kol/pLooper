@@ -994,8 +994,68 @@ void reentrantHalloweenWrapper() {
         print("In 2nd leg", "teal");
         beforeScriptRuns();
         //kingLiberated = true leg1 before ascending. false after ascending
-        if (!get_property('kingLiberated').to_boolean()) {
+        if (!get_property('kingLiberated').to_boolean() && (get_property("prusias_ploop_pathId") != "49" || (get_property("questL13Final") != "step12" && get_property("questL13Final") != "step13" && get_property("questL13Final") != "finished")) ) {
             cli_execute(get_property("prusias_ploop_ascendScript"));
+        }
+        if (!get_property('kingLiberated').to_boolean() && get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
+            //still king not liberated
+            if (available_amount($item[10058]) > 0) {
+                int numToSauge = min(23,item_amount($item[magical sausage casing]));
+                cli_execute("make " + numToSauge + " magical sausage");
+                cli_execute("eat " + numToSauge + " magical sausage");
+            }  
+            if (available_amount($item[10929]) > 0 && available_amount($item[astral pilsner]) >= 5) {
+                cli_execute("cast ode to booze");
+                cli_execute("drink astral pilsner");
+            }
+            if (!get_property('kingLiberated').to_boolean()) {
+                visit_url("place.php?whichplace=nstower&action=ns_11_prism");
+            }
+            cli_execute("hagnk all");
+            cli_execute("refresh all");
+            if (available_amount($item[10929]) > 0 && my_inebriety() > inebriety_limit()) {
+                while (get_property("_sweatOutSomeBoozeUsed").to_int() < 3) {
+                    equip($item[designer sweatpants]);
+                    use_skill(1, $skill[Sweat Out Some Booze]);
+                }
+                cli_execute("use cuppa Sobrie tea");
+                cli_execute("use synthetic dog hair pill");
+            }
+        }
+        if (!get_property('kingLiberated').to_boolean()) {
+            visit_url("place.php?whichplace=nstower&action=ns_11_prism");
+        }
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
+            cli_execute("hagnk all");
+            cli_execute("refresh all");
+            //steel liver
+		    cli_execute("uneffect beaten up");
+            print("Trying to get steel organ");
+            if (my_adventures() < 15) {
+                if (item_amount($item[astral six-pack]) > 0) {
+                    cli_execute("use astral six-pack");
+                }
+                if (item_amount($item[astral pilsner]) > 0) {
+                    cli_execute("cast ode to booze");
+                    cli_execute("drink astral pilsner");
+                }
+            }
+            set_property("_prusias_ploop_got_steel_organ", "true");
+            cli_execute("ploopgoals goal organ");
+        }
+        if (!get_property('moonTuned').to_boolean() && get_property("prusias_ploop_postRunMoonTune") != "") {
+            //tune moon maybe
+            cli_execute('unequip hewn moon-rune spoon');
+            if (item_amount($item[hewn moon-rune spoon]) > 0) {
+                int postrunTuneMoon =  get_property("prusias_ploop_postRunMoonTune").to_int();
+                visit_url('inv_use.php?whichitem=10254&doit=96&whichsign='+postrunTuneMoon);
+            }
+        }
+        returnClanStashItems();
+        if (!get_property("_workshedItemUsed").to_boolean() 
+            && get_property("prusias_ploop_workshedItemAfterLoopScript") != ""
+            && get_workshed() == $item[none]) {
+            cli_execute("use " + get_property("prusias_ploop_workshedItemAfterLoopScript"));
         }
         if (get_property('kingLiberated').to_boolean() &&
         (my_inebriety() < inebriety_limit() ||
