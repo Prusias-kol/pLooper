@@ -4,7 +4,7 @@ string CrabFight = "if hasskill sing along; skill sing along;endif;if hasskill f
 string Windy = "if hascombatitem windicle;use windicle;endif;if hasskill sing along; skill sing along;endif;if hasskill furious wallop;skill furious wallop;endif;if hasskill saucegeyser;skill saucegeyser;endif;attack with your weapon;repeat";
 
 void main() {
-	print("Attempting to access PirateRealm Trash island");
+	print("Attempting to access PirateRealm Trash island", "teal");
 	if (get_property("_lastPirateRealmIsland") == "Trash Island") {
 		print("Already at trash island", "teal");
 		return;
