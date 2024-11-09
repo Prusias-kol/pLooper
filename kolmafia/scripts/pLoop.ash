@@ -52,7 +52,7 @@ prusias_ploop_preAscendClanStashAcquireList = string,string...
 
 prusias_ploop_alwaysPvP = boolean
 prusias_ploop_leg1PvP = boolean
-prusias_ploop_disableOffhandRemakrable = boolean
+prusias_ploop_disableOffhandRemarkable = boolean
 
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
@@ -106,7 +106,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
-    print_html("<b>prusias_ploop_disableOffhandRemakrable</b> - Set to true to disable casting offhand remarkable on rollover");
+    print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
 
 }
 
