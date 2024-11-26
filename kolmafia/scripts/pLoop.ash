@@ -737,7 +737,7 @@ void nightcap() {
     }
     if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
         prepPvp();
-        cli_execute("PVP_MAB");
+        cli_execute("pvp_mab");
     }
 	//burning cape
 	if (available_amount($item[burning cape]) > 0) {
@@ -823,7 +823,7 @@ void reentrantWrapper() {
             if (!get_property('thoth19_event_list').contains_text("wineglassDone"))
                 addBreakpoint("wineglassDone");
             if (pvp_attacks_left() > 0) {
-                cli_execute("PVP_MAB");
+                cli_execute("pvp_mab");
             }
             if (my_adventures() == 0) {
                 prepPvp();
@@ -966,7 +966,7 @@ void reentrantHalloweenWrapper() {
             if (!get_property('thoth19_event_list').contains_text("spookyWineglassDone"))
                 addBreakpoint("spookyWineglassDone");
             if (pvp_attacks_left() > 0) {
-                cli_execute("PVP_MAB");
+                cli_execute("pvp_mab");
             }
             if (my_adventures() == 0) {
                 CS_Ascension();
@@ -985,7 +985,7 @@ void reentrantHalloweenWrapper() {
             }
             if (pvp_attacks_left() > 0) {
                 prepPvp();
-                cli_execute("PVP_MAB");
+                cli_execute("pvp_mab");
             }
             CS_Ascension();
         }
