@@ -530,26 +530,6 @@ void preCSrun() {
             cli_execute("acquire 1 wasabi marble soda");
         if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
             cli_execute("acquire 1 one-day ticket to Dinseylandfill");
-        
-        //custom acquisition list
-        foreach x, it in get_property("prusias_ploop_preAscendAcquireList").split_string('(?<!\\\\)(, |,)') {
-            it = replace_all(create_matcher(`\\\\`, it), "");
-            item acquisitionItem = it.to_item();
-            if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem)) {
-                print("Acquiring " + acquisitionItem.to_string());
-                cli_execute("acquire 1 " + acquisitionItem.to_string());
-            }
-        }
-        //clan stash acquisition list prusias_ploop_preAscendClanStashAcquireList
-        foreach x, it in get_property("prusias_ploop_preAscendClanStashAcquireList").split_string('(?<!\\\\)(, |,)') {
-            it = replace_all(create_matcher(`\\\\`, it), "");
-            item acquisitionItem = it.to_item();
-            cli_execute("refresh stash");
-            if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem) && stash_amount(acquisitionItem) > 0) {
-                print("Acquiring from stash " + acquisitionItem.to_string());
-                addClanStashAcquiredTracking(acquisitionItem.to_string());
-            }
-        }
     }
 
     //potential smol pulls
@@ -595,6 +575,26 @@ void preCSrun() {
                 
         }
         
+    }
+
+    //custom acquisition list
+    foreach x, it in get_property("prusias_ploop_preAscendAcquireList").split_string('(?<!\\\\)(, |,)') {
+        it = replace_all(create_matcher(`\\\\`, it), "");
+        item acquisitionItem = it.to_item();
+        if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem)) {
+            print("Acquiring " + acquisitionItem.to_string());
+            cli_execute("acquire 1 " + acquisitionItem.to_string());
+        }
+    }
+    //clan stash acquisition list prusias_ploop_preAscendClanStashAcquireList
+    foreach x, it in get_property("prusias_ploop_preAscendClanStashAcquireList").split_string('(?<!\\\\)(, |,)') {
+        it = replace_all(create_matcher(`\\\\`, it), "");
+        item acquisitionItem = it.to_item();
+        cli_execute("refresh stash");
+        if (acquisitionItem != $item[none] && needToAcquireItem(acquisitionItem) && stash_amount(acquisitionItem) > 0) {
+            print("Acquiring from stash " + acquisitionItem.to_string());
+            addClanStashAcquiredTracking(acquisitionItem.to_string());
+        }
     }
 
     print("Remember to spend your pvp fights", "fuchsia");
