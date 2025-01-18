@@ -903,7 +903,13 @@ void reentrantWrapper() {
             }  
             if (available_amount($item[10929]) > 0 && available_amount($item[astral pilsner]) >= 5) {
                 cli_execute("cast ode to booze");
-                cli_execute("drink astral pilsner");
+                if (my_inebriety() < inebriety_limit()) {
+                    print("Somehow empty liver after smol done??", "red");
+                    cli_execute("drink astral pilsner");
+                }
+                if (my_inebriety() == inebriety_limit()) {
+                    overdrink(1, $item[astral pilsner]);
+                } 
             }
             if (!get_property('kingLiberated').to_boolean()) {
                 visit_url("place.php?whichplace=nstower&action=ns_11_prism");
