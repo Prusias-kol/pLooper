@@ -63,6 +63,10 @@ prusias_ploop_nightcapMPA = int
 prusias_ploop_garboAdditionalArg = string
 prusias_ploop_breakfastAdditionalScript = string
 
+Smol specific
+prusias_ploop_smolNoSaladFork = boolean
+prusias_ploop_smolNoFrostyMug = boolean
+
 Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
@@ -107,6 +111,9 @@ void optional_help_info() {
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
     print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
+    print("Smol Specific", "teal");
+    print_html("<b>prusias_ploop_smolNoSaladFork</b> - Set to true to disable preparing a salad fork before ascension for smol");
+    print_html("<b>prusias_ploop_smolNoFrostyMug</b> - Set to true to disable preparing a frosty mug before ascension for smol");
 
 }
 
@@ -547,10 +554,47 @@ void preCSrun() {
 
     //potential smol pulls
     if (get_property("prusias_ploop_pathId") == "49") {
-        if (available_amount($item[pizza of legend])  == 0)
-            cli_execute("make pizza of legend");
-        retrieve_item(1, $item[3323]);//salad fork
-        retrieve_item(1, $item[3324]);//frosty mug
+        int yeastPrice = mall_price($item[Yeast of Boris]);
+        int vegetablePrice = mall_price($item[Vegetable of Jarlsberg]);
+        int wheyPrice = mall_price($item[St. Sneaky Pete's Whey]);
+
+        int pizzaPrice = (2 * yeastPrice) + (2 * vegetablePrice) + (2 * wheyPrice);
+        
+        if (pizzaPrice < 50 * get_property("valueOfAdventure").to_int()) {
+            if (available_amount($item[calzone of legend])  == 0)
+                cli_execute("make calzone of legend");
+
+            if (available_amount($item[deep dish of legend])  == 0)
+                cli_execute("make deep dish of legend");
+
+            if (available_amount($item[pizza of legend])  == 0)
+                cli_execute("make pizza of legend");
+        } else {
+            if (available_amount($item[calzone of legend]) == 0 || available_amount($item[pizza of legend]) == 0 || available_amount($item[deep dish of legend]) == 0) {
+                print("T4 CBB foods (pizza of legend, deep dish of legend, calzone of legend) are outside of safe price range. Maybe mall shenanigans?", "red");
+                print("Acquire 1 of each and run ploop again to continue.", "red");
+                abort();
+            }
+        }
+        if (!get_property("prusias_ploop_smolNoSaladFork").to_boolean()) {
+            retrieve_item(1, $item[3323]);//salad fork
+            if (available_amount($item[3323]) == 0) {
+                print("Failed to acquire salad fork", "red");
+                print_html("Consider setting <b>prusias_ploop_smolNoSaladFork</b> to true to skip this step");
+                abort();
+            }
+                
+        }
+        if (!get_property("prusias_ploop_smolNoFrostyMug").to_boolean()) {
+            retrieve_item(1, $item[3324]);//frosty mug
+            if (available_amount($item[3324]) == 0) {
+                print("Failed to acquire frosty mug", "red");
+                print_html("Consider setting <b>prusias_ploop_smolNoFrostyMug</b> to true to skip this step");
+                abort();
+            }
+                
+        }
+        
     }
 
     print("Remember to spend your pvp fights", "fuchsia");
