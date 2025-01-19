@@ -512,7 +512,7 @@ void preCSrun() {
                 cli_execute("make pizza of legend");
         } else {
             if (available_amount($item[calzone of legend]) == 0 || available_amount($item[pizza of legend]) == 0 || available_amount($item[deep dish of legend]) == 0) {
-                print("ERROR: T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
+                print("ERROR_PLOOP: T4 CBB foods are outside of safe price range. Maybe mall shenanigans?", "red");
                 print("Acquire 1 of each and run ploop again to continue.", "red");
                 abort();
             }
@@ -551,7 +551,7 @@ void preCSrun() {
                 cli_execute("make pizza of legend");
         } else {
             if (available_amount($item[calzone of legend]) == 0 || available_amount($item[pizza of legend]) == 0 || available_amount($item[deep dish of legend]) == 0) {
-                print("ERROR: T4 CBB foods (pizza of legend, deep dish of legend, calzone of legend) are outside of safe price range. Maybe mall shenanigans?", "red");
+                print("ERROR_PLOOP: T4 CBB foods (pizza of legend, deep dish of legend, calzone of legend) are outside of safe price range. Maybe mall shenanigans?", "red");
                 print("Acquire 1 of each and run ploop again to continue.", "red");
                 abort();
             }
@@ -559,7 +559,7 @@ void preCSrun() {
         if (!get_property("prusias_ploop_smolNoSaladFork").to_boolean()) {
             retrieve_item(1, $item[3323]);//salad fork
             if (available_amount($item[3323]) == 0) {
-                print("ERROR: Failed to acquire salad fork", "red");
+                print("ERROR_PLOOP: Failed to acquire salad fork", "red");
                 print_html("You can also set <b>prusias_ploop_smolNoSaladFork</b> to true to skip this step");
                 abort();
             }
@@ -568,7 +568,7 @@ void preCSrun() {
         if (!get_property("prusias_ploop_smolNoFrostyMug").to_boolean()) {
             retrieve_item(1, $item[3324]);//frosty mug
             if (available_amount($item[3324]) == 0) {
-                print("ERROR: Failed to acquire frosty mug", "red");
+                print("ERROR_PLOOP: Failed to acquire frosty mug", "red");
                 print_html("You can also set <b>prusias_ploop_smolNoFrostyMug</b> to true to skip this step");
                 abort();
             }
@@ -817,7 +817,7 @@ void nightcap() {
         }
     } else {
         nightcapFamiliar();
-        print("ERROR: Nightcap was overdrunk when it shouldn't have been");
+        print("ERROR_PLOOP: Nightcap was overdrunk when it shouldn't have been");
         abort();
     }
     nightcapFamiliar();
@@ -874,7 +874,7 @@ void reentrantWrapper() {
                 prepPvp();
                 CS_Ascension();
             } else {
-                print("ERROR: Still adventures left over after", "red");
+                print("ERROR_PLOOP: Still adventures left over after", "red");
                 abort();
             }
         } else {
@@ -905,7 +905,7 @@ void reentrantWrapper() {
             if (available_amount($item[10929]) > 0 && available_amount($item[astral pilsner]) >= 5) {
                 cli_execute("cast ode to booze");
                 if (my_inebriety() < inebriety_limit()) {
-                    print("WARNING: Somehow empty liver after smol done??", "red");
+                    print("WARNING_PLOOP: Somehow empty liver after smol done??", "red");
                     cli_execute("drink astral pilsner");
                 }
                 if (my_inebriety() == inebriety_limit()) {
@@ -925,7 +925,7 @@ void reentrantWrapper() {
                 cli_execute("use cuppa Sobrie tea");
                 cli_execute("use synthetic dog hair pill");
                 if (my_inebriety() > inebriety_limit()) {
-                    print("ERROR: Smol organ clearing failed. Please ping Prusais in ASS discord", "red");
+                    print("ERROR_PLOOP: Smol organ clearing failed. Please ping Prusais in ASS discord", "red");
                 }
             }
         }
@@ -1025,7 +1025,7 @@ void reentrantHalloweenWrapper() {
             if (my_adventures() == 0) {
                 CS_Ascension();
             } else {
-                print("ERROR: Still adventures left over after", "red");
+                print("ERROR_PLOOP: Still adventures left over after", "red");
                 set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
                 set_property("prusias_ploop_preHalloweenMPA", "");
                 abort();
