@@ -128,7 +128,7 @@ void main() {
 		adv1($location[Sailing the PirateRealm Seas], -1, CrabFight);
 		limit_turns = limit_turns + 1;
 		if (limit_turns >= 10) {
-			print("WARNING: PirateRealm sailing not completed after 10 turns", "red");
+			abort("ERROR: PirateRealm sailing not completed after 10 turns", "red");
 		}
 	}
 	cli_execute("unequip acc1");
