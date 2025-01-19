@@ -1,4 +1,4 @@
--1	10
+-1	11
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
@@ -10,3 +10,4 @@
 8	Two new additional optional preferences listed in ploop help. Lets you add a personal script to your breakfast and modify garbo arguments whenever garbo is called. 
 9	New command to access PirateRealm and run garbo targetting cockroaches. Thanks Tapion! Requires PirateRealm Membership Packet.
 10	Separated Ploop's optional configurable preferences to a new command.
+11	Pre-run pulls and sailing (for optional cockroach targeting) has been made much more robust. 
