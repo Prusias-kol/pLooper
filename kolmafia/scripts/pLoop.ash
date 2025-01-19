@@ -648,6 +648,7 @@ void garboUsage(string x) {
         garboString += " " + x;
     if (get_property("prusias_ploop_garboAdditionalArg") != "")
         garboString += " " + get_property("prusias_ploop_garboAdditionalArg");
+    print("Running garbo with " + garboString);
     cli_execute(garboString);
 }
 
