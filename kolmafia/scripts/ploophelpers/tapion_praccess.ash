@@ -124,8 +124,12 @@ void main() {
         cli_execute("set WindicleSet = false");
     }
 	int limit_turns = 0;
-	while ((get_property("_lastPirateRealmIsland") != "Trash Island") && limit_turns < 5) {
+	while ((get_property("_questPirateRealm") != "step9")) {
 		adv1($location[Sailing the PirateRealm Seas], -1, CrabFight);
+		limit_turns = limit_turns + 1;
+		if (limit_turns >= 10) {
+			print("WARNING: PirateRealm sailing not completed after 10 turns", "red");
+		}
 	}
 	cli_execute("unequip acc1");
 	
