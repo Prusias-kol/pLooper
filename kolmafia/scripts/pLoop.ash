@@ -390,109 +390,7 @@ boolean useCombo() {
     return false;
 }
 
-void CS_Ascension() {
-
-    useCombo();
-
-    if (!get_property('thoth19_event_list').contains_text("wineglassDone") && !get_property('thoth19_event_list').contains_text("preAscend"))
-        addBreakpoint("preAscend");
-
-    if (get_property("getawayCampsiteUnlocked").to_boolean() && get_property("prusias_ploop_optOutSmoking").to_lower_case() != "true") {
-        //smoke tax
-        int tryNumSmokes = 10;
-        if (item_amount($item[stick of firewood]) < tryNumSmokes) {
-            cli_execute("buy " + tryNumSmokes + " stick of firewood @100");
-        }
-
-        int smoke = 0;
-        tryNumSmokes = min(tryNumSmokes,item_amount($item[stick of firewood]));
-        cli_execute("acquire " + tryNumSmokes + " stick of firewood");
-        while(item_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
-		smoke = smoke + 1;
-            catch {
-                cli_execute("acquire campfire smoke");
-                set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
-                use(1,$item[campfire smoke]);
-            } 
-        }
-    }
-
-
-    int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
-	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
-    int type = 2;
-    if (get_property("prusias_ploop_ascensionType") != "") {
-        type = get_property("prusias_ploop_ascensionType").to_int();
-    }
-	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
-    int pathId = 25;//cs
-    if (get_property("prusias_ploop_pathId") != "") {
-        pathId = get_property("prusias_ploop_pathId").to_int();
-    }
-	
-	int classId = get_property("prusias_ploop_classId").to_class().to_int();
-    int gender = get_property("prusias_ploop_ascendGender").to_int(); //1 boy, 2 girl
-
-
-	if (get_property("csServicesPerformed").split_string(",").count() == 11) {
-		print("attempting to enter valhalla");
-		visit_url("council.php",false,true);
-		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
-	}
-	else if (get_property("kingLiberated").to_boolean()) {
-		print("attempting to enter valhalla");
-		//abort("need url of non-CS ascension location");
-		visit_url("",false,true);
-		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
-	} else {
-        print("attempt to ascend failed");
-    }
-
-	if (!visit_url("charpane.php").contains_text("Astral Spirit"))
-		abort("failed to get to valhalla");
-
-	//visit_url("afterlife.php?realworld=1",false,true);
-	visit_url("afterlife.php?action=pearlygates",false,true);
-
-	//buy things
-	if (deli > 0)
-		visit_url(`afterlife.php?action=buydeli&whichitem={deli}`,true,true);
-	if (pet > 0)
-		visit_url(`afterlife.php?action=buyarmory&whichitem={pet}`,true,true);
-    //perm things
-    //hc perm all the skills; assumes enough karma to cover costs
-    string permAll = "sc";
-    if (permAll == "hc" || permAll == "sc") {
-        buffer buf = visit_url("afterlife.php?place=permery");
-        string [int] hcsc = xpath(buf,'//form[@action="afterlife.php"]//input[@name="action"]/@value');
-        string [int] perm = xpath(buf,'//form[@action="afterlife.php"]//input[@name="whichskill"]/@value');
-        int size = perm.count();
-        if (size > 0) {
-            print (`Perming all {permAll.to_upper_case()} skills:`,"blue");
-            for i from 0 to size-1
-                if (hcsc[i] == `{permAll}perm`)
-                    visit_url(`afterlife.php?action={permAll}perm&whichskill={perm[i]}`,true,true);
-        }
-    }
-	//ascend
-	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (pathId == 49 || pathId == 41) {
-        visit_url('main.php'); while (handling_choice()) {run_choice(1);}
-    }
-
-}
-
-void preCSrun() {
-    cli_execute("garden pick");
-    if (get_property("prusias_ploop_preAscendGarden") != "")
-	if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
-            cli_execute("use " + get_property("prusias_ploop_preAscendGarden"));
-    use_familiar($familiar[Stooper]);
-    if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
-        cli_execute("drink stillsuit distillate");
-    else
-        cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
-
+void pre_ascend_pulls() {
     //Acquire Potential CS Pulls
     if (get_property("prusias_ploop_ascensionType") == "" || get_property("prusias_ploop_ascensionType").to_int() < 3) {
         int yeastPrice = mall_price($item[Yeast of Boris]);
@@ -596,6 +494,113 @@ void preCSrun() {
             addClanStashAcquiredTracking(acquisitionItem.to_string());
         }
     }
+}
+
+void CS_Ascension() {
+    pre_ascend_pulls();
+
+    useCombo();
+
+    if (!get_property('thoth19_event_list').contains_text("wineglassDone") && !get_property('thoth19_event_list').contains_text("preAscend"))
+        addBreakpoint("preAscend");
+
+    if (get_property("getawayCampsiteUnlocked").to_boolean() && get_property("prusias_ploop_optOutSmoking").to_lower_case() != "true") {
+        //smoke tax
+        int tryNumSmokes = 10;
+        if (item_amount($item[stick of firewood]) < tryNumSmokes) {
+            cli_execute("buy " + tryNumSmokes + " stick of firewood @100");
+        }
+
+        int smoke = 0;
+        tryNumSmokes = min(tryNumSmokes,item_amount($item[stick of firewood]));
+        cli_execute("acquire " + tryNumSmokes + " stick of firewood");
+        while(item_amount($item[stick of firewood]).to_boolean() && smoke < tryNumSmokes) {
+		smoke = smoke + 1;
+            catch {
+                cli_execute("acquire campfire smoke");
+                set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
+                use(1,$item[campfire smoke]);
+            } 
+        }
+    }
+
+
+    int deli = get_property("prusias_ploop_astralDeli").to_item().to_int();
+	int pet = get_property("prusias_ploop_astralPet").to_item().to_int();
+    int type = 2;
+    if (get_property("prusias_ploop_ascensionType") != "") {
+        type = get_property("prusias_ploop_ascensionType").to_int();
+    }
+	int moonId = get_property("prusias_ploop_moonId").to_int();//wallaby
+    int pathId = 25;//cs
+    if (get_property("prusias_ploop_pathId") != "") {
+        pathId = get_property("prusias_ploop_pathId").to_int();
+    }
+	
+	int classId = get_property("prusias_ploop_classId").to_class().to_int();
+    int gender = get_property("prusias_ploop_ascendGender").to_int(); //1 boy, 2 girl
+
+
+	if (get_property("csServicesPerformed").split_string(",").count() == 11) {
+		print("attempting to enter valhalla");
+		visit_url("council.php",false,true);
+		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
+	}
+	else if (get_property("kingLiberated").to_boolean()) {
+		print("attempting to enter valhalla");
+		//abort("need url of non-CS ascension location");
+		visit_url("",false,true);
+		visit_url("ascend.php?pwd&action=ascend&confirm=on&confirm2=on",true,true);
+	} else {
+        print("attempt to ascend failed");
+    }
+
+	if (!visit_url("charpane.php").contains_text("Astral Spirit"))
+		abort("failed to get to valhalla");
+
+	//visit_url("afterlife.php?realworld=1",false,true);
+	visit_url("afterlife.php?action=pearlygates",false,true);
+
+	//buy things
+	if (deli > 0)
+		visit_url(`afterlife.php?action=buydeli&whichitem={deli}`,true,true);
+	if (pet > 0)
+		visit_url(`afterlife.php?action=buyarmory&whichitem={pet}`,true,true);
+    //perm things
+    //hc perm all the skills; assumes enough karma to cover costs
+    string permAll = "sc";
+    if (permAll == "hc" || permAll == "sc") {
+        buffer buf = visit_url("afterlife.php?place=permery");
+        string [int] hcsc = xpath(buf,'//form[@action="afterlife.php"]//input[@name="action"]/@value');
+        string [int] perm = xpath(buf,'//form[@action="afterlife.php"]//input[@name="whichskill"]/@value');
+        int size = perm.count();
+        if (size > 0) {
+            print (`Perming all {permAll.to_upper_case()} skills:`,"blue");
+            for i from 0 to size-1
+                if (hcsc[i] == `{permAll}perm`)
+                    visit_url(`afterlife.php?action={permAll}perm&whichskill={perm[i]}`,true,true);
+        }
+    }
+	//ascend
+	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
+    if (pathId == 49 || pathId == 41) {
+        visit_url('main.php'); while (handling_choice()) {run_choice(1);}
+    }
+
+}
+
+void preCSrun() {
+    cli_execute("garden pick");
+    if (get_property("prusias_ploop_preAscendGarden") != "")
+	if (available_amount(get_property("prusias_ploop_preAscendGarden").to_item()) > 0)
+            cli_execute("use " + get_property("prusias_ploop_preAscendGarden"));
+    use_familiar($familiar[Stooper]);
+    if (available_amount($item[tiny stillsuit]) > 0 || have_equipped($item[tiny stillsuit]))
+        cli_execute("drink stillsuit distillate");
+    else
+        cli_execute("CONSUME ALL VALUE " + (get_property("valueOfAdventure").to_int()));
+
+    
 
     print("Remember to spend your pvp fights", "fuchsia");
 }
@@ -851,6 +856,11 @@ void reentrantWrapper() {
                 garboUsage("ascend");
             else
                 garboUsage(`ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
+            
+            //after garbo check inebriety
+            if (my_inebriety() < inebriety_limit()) {
+                print("WARNING_PLOOP: Somehow garbo left empty liver", "red");
+            }
         }
 
         if (!get_property('thoth19_event_list').contains_text("leg1garbo"))
