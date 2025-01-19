@@ -117,50 +117,63 @@ void optional_help_info() {
 
 }
 
+string homeClanPrompt = "What is your home clan? The script will ensure you are in this clan before running.";
+string gardenPrompt = "What garden do you want to setup before ascending into valhalla? Provide exact name of seeds. Leave blank to ignore.";
+string moonPrompt = "Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat";
+string classPrompt = "Provide the exact class name you want to ascend into. Ex: Seal Clubber";
+string astralPetPrompt = "Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven";
+string astralDeliPrompt = "Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks";
+string genderPrompt = "Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female.";
+string ascendScriptPrompt = "What script should be run after exiting valhalla to finish your run (ex: instantsccs, loopsmol, etc.)? Type just as you would type in the CLI to run the script.";
+string workshedPrompt = "On leg 1 (after RO at the start of the day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
+string leg2WorkshedPrompt = "On leg 2 (after ascending and running your ascension script), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
+string nightcapOutfitPrompt = "Provide the exact name of the nightcap outfit you will be using.";
+string pathIdPrompt = "What path id should be used?";
+
 void init() {
-    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
-    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (start of day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
+    set_property("prusias_ploop_homeClan", user_prompt(homeClanPrompt));
+    set_property("prusias_ploop_garboWorkshed", user_prompt(workshedPrompt));
+    set_property("prusias_ploop_preAscendGarden", user_prompt(gardenPrompt));
     set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
-    set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
-    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
-    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
-    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
-    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
-    set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending (to complete your path)? Type just as you would type in the CLI to run the script."));
-    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+    set_property("prusias_ploop_moonId", user_prompt(moonPrompt));
+    set_property("prusias_ploop_classId", user_prompt(classPrompt));
+    set_property("prusias_ploop_astralPet", user_prompt(astralPetPrompt));
+    set_property("prusias_ploop_astralDeli", user_prompt(astralDeliPrompt));
+    set_property("prusias_ploop_ascendGender", user_prompt(genderPrompt));
+    set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt(leg2WorkshedPrompt));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt(nightcapOutfitPrompt));
     set_property("prusias_ploop_pathId", "25");
 }   
 void smolInit() {
-    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
-    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (start of day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
-    set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into. 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
-    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into."));
-    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
-    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
-    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
-    set_property("prusias_ploop_ascendScript", user_prompt("What script should be run after ascending (to complete your path)? Type just as you would type in the CLI to run the script."));
-    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script (leg 2), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+    set_property("prusias_ploop_homeClan", user_prompt(homeClanPrompt));
+    set_property("prusias_ploop_garboWorkshed", user_prompt(workshedPrompt));
+    set_property("prusias_ploop_preAscendGarden", user_prompt(gardenPrompt));
+    set_property("prusias_ploop_moonId", user_prompt(moonPrompt));
+    set_property("prusias_ploop_classId", user_prompt(classPrompt));
+    set_property("prusias_ploop_astralPet", user_prompt(astralPetPrompt));
+    set_property("prusias_ploop_astralDeli", user_prompt(astralDeliPrompt));
+    set_property("prusias_ploop_ascendGender", user_prompt(genderPrompt));
+    set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt(leg2WorkshedPrompt));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt(nightcapOutfitPrompt));
     set_property("prusias_ploop_pathId", "49");
     set_property("prusias_ploop_ascensionType", "2");
 }
 
 void robotInit() {
-    set_property("prusias_ploop_homeClan", user_prompt("What is your home clan? The script will ensure you are in this clan before running."));
-    set_property("prusias_ploop_garboWorkshed", user_prompt("After RO (start of day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_preAscendGarden", user_prompt("What garden do you want to setup before ascending? Provide exact name of seeds. Leave blank to ignore."));
+    set_property("prusias_ploop_homeClan", user_prompt(homeClanPrompt));
+    set_property("prusias_ploop_garboWorkshed", user_prompt(workshedPrompt));
+    set_property("prusias_ploop_preAscendGarden", user_prompt(gardenPrompt));
     set_property("prusias_ploop_moonId", user_prompt("Provide the integer id of the moon you want to ascend into (LoopRobot wants Vole). 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat"));
-    set_property("prusias_ploop_classId", user_prompt("Provide the exact class name you want to ascend into. LoopRobot wants Pastamancer"));
-    set_property("prusias_ploop_astralPet", user_prompt("Provide the exact name of the astral pet you want to take from valhalla. https://kol.coldfront.net/thekolwiki/index.php/Pet_Heaven"));
-    set_property("prusias_ploop_astralDeli", user_prompt("Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks"));
-    set_property("prusias_ploop_ascendGender", user_prompt("Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female."));
+    set_property("prusias_ploop_classId", user_prompt(classPrompt));
+    set_property("prusias_ploop_astralPet", user_prompt(astralPetPrompt));
+    set_property("prusias_ploop_astralDeli", user_prompt(astralDeliPrompt));
+    set_property("prusias_ploop_ascendGender", user_prompt(genderPrompt));
     set_property("prusias_ploop_ascendScript", "looprobot");
     set_property("prusias_ploop_workshedItemAfterLoopScript", user_prompt("Looprobot doesn't use a workshed. What workshed would you like to use after looprobot finishes? You will be prompted for a 2nd workshed for garbo to swap to after this."));
-    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt("After ascending and running your ascension script, what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore"));
-    set_property("prusias_ploop_nightcapOutfit", user_prompt("Provide the exact name of the nightcap outfit you will be using."));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt(leg2WorkshedPrompt));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt(nightcapOutfitPrompt));
     set_property("prusias_ploop_pathId", "41");
     set_property("prusias_ploop_ascensionType", "2");
 } 
