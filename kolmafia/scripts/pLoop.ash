@@ -85,7 +85,7 @@ void ploopHelper() {
     print_html("<b>roboinit</b> - Initializes pLooper for You,Robot. Mandatory for the script to work");
     print("Daily Commands", "teal");
     print_html("<b>fullday</b> - Fullday wrapper");
-    print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additiional items outside README are acquired before ascension.");
+    print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additional items outside README are acquired before ascension.");
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
@@ -496,7 +496,7 @@ void pre_ascend_pulls() {
     }
 }
 
-void CS_Ascension() {
+void ascendToValhalla() {
     pre_ascend_pulls();
 
     useCombo();
@@ -867,6 +867,8 @@ void reentrantWrapper() {
             addBreakpoint("leg1garbo");
         if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
             preCSrun();
+        if (my_inebriety() - inebriety_limit() == 1 && my_familiar() != $familiar[Stooper])
+            use_familiar($familiar[Stooper]);
         if (!needToAcquireItem($item[Drunkula's wineglass])) {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
@@ -882,7 +884,7 @@ void reentrantWrapper() {
             }
             if (my_adventures() == 0) {
                 prepPvp();
-                CS_Ascension();
+                ascendToValhalla();
             } else {
                 print("ERROR_PLOOP: Still adventures left over after", "red");
                 abort();
@@ -895,7 +897,7 @@ void reentrantWrapper() {
                 //dunno what to do here, garbo ascend fails when overdrunk without wineglass
             }
             prepPvp();
-            CS_Ascension();
+            ascendToValhalla();
         }
     }
     if (get_property("ascensionsToday").to_int() == 1) {
@@ -1012,12 +1014,19 @@ void reentrantHalloweenWrapper() {
             else
                 garboUsage(`nobarf ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
             cli_execute("freecandy");
+
+            //after freecandy check inebriety
+            if (my_inebriety() < inebriety_limit()) {
+                print("WARNING_PLOOP: Somehow consume + freecandy left empty liver", "red");
+            }
         }
 
         if (!get_property('thoth19_event_list').contains_text("leg1halloween"))
             addBreakpoint("leg1halloween");
         if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper])
             preCSrun();
+        if (my_inebriety() - inebriety_limit() == 1 && my_familiar() != $familiar[Stooper])
+            use_familiar($familiar[Stooper]);
         if (!needToAcquireItem($item[Drunkula's wineglass])) {
             print("Breakfast leg end of day, overdrunk with wineglass", "teal");
             if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper])
@@ -1033,7 +1042,7 @@ void reentrantHalloweenWrapper() {
                 cli_execute("PVP_MAB");
             }
             if (my_adventures() == 0) {
-                CS_Ascension();
+                ascendToValhalla();
             } else {
                 print("ERROR_PLOOP: Still adventures left over after", "red");
                 set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
@@ -1051,7 +1060,7 @@ void reentrantHalloweenWrapper() {
                 prepPvp();
                 cli_execute("PVP_MAB");
             }
-            CS_Ascension();
+            ascendToValhalla();
         }
     }
     if (get_property("ascensionsToday").to_int() == 1) {
