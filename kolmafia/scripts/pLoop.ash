@@ -918,6 +918,8 @@ void reentrantWrapper() {
         beforeScriptRuns();
         //kingLiberated = true leg1 before ascending. false after ascending
         if (!get_property('kingLiberated').to_boolean() && (get_property("prusias_ploop_pathId") != "49" || (get_property("questL13Final") != "step12" && get_property("questL13Final") != "step13" && get_property("questL13Final") != "finished")) ) {
+            if (get_property("prusias_ploop_pathId") == "49")
+                print(florist_available());
             cli_execute(get_property("prusias_ploop_ascendScript"));
         }
         if (!get_property('kingLiberated').to_boolean() && get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
