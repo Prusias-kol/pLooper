@@ -1,4 +1,4 @@
--1	11
+-1	12
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
@@ -11,3 +11,4 @@
 9	New command to access PirateRealm and run garbo targetting cockroaches. Thanks Tapion! Requires PirateRealm Membership Packet.
 10	Separated Ploop's optional configurable preferences to a new command.
 11	Pre-run pulls and sailing (for optional cockroach targeting) has been made much more robust. 
+12	MAJOR UPDATE: You can now set and load save states for ploop. This means you can init on one path, save it, and swap back to your setup at any time! Run ploop help to start using this feature. 
