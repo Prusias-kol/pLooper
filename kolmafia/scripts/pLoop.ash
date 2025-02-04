@@ -71,27 +71,97 @@ Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
 prusias_ploop_clanStashTakenFrom - return to right clan
+prusias_ploop_validSaves - list of valid save states
 */
+boolean [string] skip_props = {
+    "_prusias_ploop_got_steel_organ": true,
+    "prusias_ploop_takenFromClanStashItems": true,
+    "prusias_ploop_clanStashTakenFrom": true,
+    "prusias_ploop_validSaves": true
+};
+string filePrefix = "data/ploop/saves/";
+
+void listSaves() {
+    print("Current Saves: ", "teal");
+    foreach x, it in get_property("prusias_ploop_validSaves").split_string('(?<!\\\\)(, |,)') {
+        print("- " + it);
+    }
+}
+
+void saveAllProperties(string fileName) {
+    string [string] save_to_file;
+    
+    boolean [string] prop_map =  get_all_properties("prusias_ploop_", false);
+    foreach prop, val in prop_map {
+        if (skip_props contains prop) {
+            continue;
+        }
+        string value = get_property(prop);
+        save_to_file[prop] = value;
+    }
+
+    string realFileName = filePrefix + fileName + ".txt";
+    if (map_to_file(save_to_file, realFileName)) {
+        boolean alreadyExists = false;
+        foreach x, it in get_property("prusias_ploop_validSaves").split_string('(?<!\\\\)(, |,)') {
+            if (it == fileName) {
+                if (!user_confirm("Save state of name " + fileName + " already exists. Are you sure you want to overwrite?") ) {
+                    abort("State Save canceled by user.");
+                }
+                print("Overwriting the save state named " + fileName, "red");
+                alreadyExists = true;
+                break;
+            }
+        }
+        if (!alreadyExists) {
+            if (get_property("prusias_ploop_validSaves") == "") {
+                set_property("prusias_ploop_validSaves", fileName);
+            } else {
+                set_property("prusias_ploop_validSaves", get_property("prusias_ploop_validSaves") + "," + fileName);
+            }
+        }
+        print("Ploop save state successfully created in /" + realFileName, "teal");
+    } else {
+        print("Error, file was not saved.");
+    }
+    
+}
+
+void loadAllProperties(string fileName) {
+    string realFileName = filePrefix + fileName + ".txt";
+    string [string] prop_map;
+    file_to_map(realFileName, prop_map);
+    foreach prop, val in prop_map {
+        print("Setting " + prop + " to " + val);
+        set_property(prop, val);
+    }
+    print("Ploop save state successfully loaded.", "teal");
+}
 
 void ploopHelper() {
     print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
     print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
     print("To use the script, please run ploop init before you run ploop fullday");
-    print("Setup Commands","teal");
+    print("Setup Commands - At least one of the inits must be run","teal");
     print_html("<b>init</b> - Initializes pLooper CS. Mandatory for the script to work");
     //smolinit
     print_html("<b>smolinit</b> - Initializes pLooper for smol. Mandatory for the script to work");
     //you, robot
     print_html("<b>roboinit</b> - Initializes pLooper for You,Robot. Mandatory for the script to work");
+    print("Saves Feature - Lets you quickly hotswap between run types", "teal");
+    print_html("<b>listSaves</b> - Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves");
+    print_html("<b>save (name)</b> - Saves current state of pLooper to a file with the given name");
+    print_html("<b>load (name)</b> - Loads the state of pLooper from the file with the given name");
     print("Daily Commands", "teal");
     print_html("<b>fullday</b> - Fullday wrapper");
+    print("Commonly Used Configs", "teal");
     print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additional items outside README are acquired before ascension.");
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
     print_html("<b>pirateRealmEnable</b> - Enables fishing for Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet!</b>");
     print_html("<b>pirateRealmDisable</b> - Disables fishing for Trash Island and garbo targetting cockroaches.");
-    print("Ploop's Configurable Settings", "teal");
+    print("Additional Configs", "teal");
     print_html("<b>options</b> - See optional preferences you can set and configure");
     cli_execute("pUpdates check ploop");
 }
@@ -197,8 +267,12 @@ string saucegeyserAll(int round, monster opp, string text) {
     if (have_skill($skill[Saucegeyser])) {
         return "skill Saucegeyser";
     } else {
-        return get_ccs_action(round);
+        return "attack";
     }
+}
+
+boolean isHalloween() {
+    return (get_property("prusias_ploop_detectHalloween").to_boolean() == true && holiday() == "Halloween");
 }
 
 void returnClanStashItems() {
@@ -852,7 +926,21 @@ void beforeScriptRuns() {
     }
 }
 
-void reentrantWrapper() {
+/*
+breakfast
+garbo1
+    garbo no barf
+    garbo barf
+pre-ascend (overdrink and etc)
+ascend into path
+call path script
+garbo2
+    garbo no barf
+    garbo barf
+nightcap
+*/
+
+void reentrantWrapper(string start, string end) {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
         //break hippy stone if leg 1
@@ -1012,8 +1100,13 @@ void reentrantWrapper() {
 
     }
     print("Plooping Complete!", "teal");
+    print_html("<i>You just plooped yourself</i>");
 
     cli_execute("pUpdates check ploop");
+}
+
+void reentrantWrapper() {
+    reentrantWrapper("", "");
 }
 
 void reentrantHalloweenWrapper() {
@@ -1227,18 +1320,16 @@ void main(string input) {
                     ploopHelper();
                     return;
                 }
-                if (get_property("prusias_ploop_detectHalloween").to_boolean() == true) {
-                    if (holiday() == "Halloween") {
-                        set_property("prusias_ploop_preHalloweenMPA", get_property("valueOfAdventure"));
-                        set_property("valueOfAdventure", "9999");
-                        reentrantHalloweenWrapper();
-                        set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
-                        set_property("prusias_ploop_preHalloweenMPA", "");
-                    } else {
-                        reentrantWrapper();
-                    }
+                if (isHalloween()) {
+                    set_property("prusias_ploop_preHalloweenMPA", get_property("valueOfAdventure"));
+                    set_property("valueOfAdventure", "9999");
+                    reentrantHalloweenWrapper();
                 } else {
                     reentrantWrapper();
+                }
+                if (isHalloween()) {
+                    set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                    set_property("prusias_ploop_preHalloweenMPA", "");
                 }
                 return;
             case "init":
@@ -1284,6 +1375,27 @@ void main(string input) {
                 } else {
                     print("Please provide an item name as an argument.", "red");
                 }
+                return;
+            case "save":
+                if(i + 1 < commands.count()) {
+                    i = i+1;
+                    string saveName = commands[i];
+                    saveAllProperties(saveName);
+                } else {
+                    print("Please provide a save name as an argument.", "red");
+                }
+                return;
+            case "load":
+                if(i + 1 < commands.count()) {
+                    i = i+1;
+                    string saveName = commands[i];
+                    loadAllProperties(saveName);
+                } else {
+                    print("Please provide a save name as an argument.", "red");
+                }
+                return;
+            case "listsaves":
+                listSaves();
                 return;
             case "piraterealmenable":
                 set_property("prusias_ploop_garboAdditionalArg", `target="cockroach"`);
