@@ -10,6 +10,7 @@ void main() {
 		return;
 	}
 	if (my_adventures() < 40) {
+		print("Less than 40 adventures, acquiring more for piraterealm", "red");
 		if (item_amount($item[astral six-pack]) > 0) {
 			cli_execute("use astral six-pack");
 		}
@@ -22,6 +23,14 @@ void main() {
 	if ((get_property("_pirateRealmSailingTurns").to_int() == 0 && ((get_property("prAlways") == "true") || (get_property("_prToday") == "true")) && (get_property("_lastPirateRealmIsland") != "Trash Island") && (get_property("pirateRealmUnlockedAnemometer") == "true"))) {
 		visit_url("/place.php?whichplace=realm_pirate&action=pr_port");
 		cli_execute("equip acc1 PirateRealm eyepatch");
+	} else {
+		print("Skipping acquiring piraterealm eyepatch");
+		if (item_amount($item[PirateRealm eyepatch]) > 0) {
+			cli_execute("equip acc1 PirateRealm eyepatch");
+		} 
+		if (have_equipped($item[PirateRealm eyepatch]) == false) {
+			abort("ERROR: PirateRealm eyepatch not equipped");
+		}
 	}
 	
 	if (item_amount($item[windicle]) == 0) {
@@ -39,13 +48,14 @@ void main() {
 	foreach st in $stats[] {
 		if ((my_buffedstat(st).to_int() >= 100) && (available_amount($item[HOA zombie eyes]).to_int() == 1)) {
 			cli_execute("equip acc2 HOA zombie eyes");
+			break;
 		}
 	}
 	keepStatsLow();
 	foreach st in $stats[] {
 		if (my_buffedstat(st).to_int() >= 100)
 		{
-			abort("Stats over 100");
+			abort("ERROR: PR script found Stats over 100");
 		}
 	}
 
