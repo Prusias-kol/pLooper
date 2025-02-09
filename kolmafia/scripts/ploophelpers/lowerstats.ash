@@ -10,7 +10,8 @@ void keepStatsLow() {
   // Loop through each stat
   foreach st in $stats[] {
       // While the buffed stat is greater than 100
-      while (my_buffedstat(st) > 100) {
+      if (my_buffedstat(st) > 100) {
+            print("Lowering " + st);
           if (!check_effect($effect[Mush-Mouth]) && mall_price($item[Fun-Guy spore]) < 5000) {
               retrieve_item(1, $item[Fun-Guy spore]);
               use(1, $item[Fun-Guy spore]);
@@ -30,8 +31,11 @@ void keepStatsLow() {
           if (st == $stat[Moxie]) {
               if (!have($item[patchouli incense stick]) && !check_effect($effect[Far Out]) && mall_price($item[patchouli incense stick]) < 2000) {
                   retrieve_item(1, $item[patchouli incense stick]);
+                  
               }
-              use(1, $item[patchouli incense stick]);
+              if (!check_effect($effect[Far Out])) {
+                  use(1, $item[patchouli incense stick]);
+              }
 
               if (check_effect($effect[Endless Drool])) {
                   cli_execute("shrug " + $effect[Endless Drool]);
@@ -59,6 +63,9 @@ void keepStatsLow() {
                   cli_execute("shrug " + ef);
               }
           }
+      }
+      if (my_buffedstat(st) > 100) {
+          abort("ERROR: Stat " + st + " over 100. Considering using modtrace to fix");
       }
   }
 }
