@@ -1398,6 +1398,7 @@ void main(string input) {
                 listSaves();
                 return;
             case "piraterealmenable":
+                user_confirm("Make sure you don't have breakfast on startup or any startup scripts that run breakfast! This option uses breakfast to unlock pirateRealm for cockroaches");
                 set_property("prusias_ploop_garboAdditionalArg", `target="cockroach"`);
                 set_property("prusias_ploop_breakfastAdditionalScript", "tapion_praccess");
                 return;
