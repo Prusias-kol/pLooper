@@ -159,8 +159,8 @@ void ploopHelper() {
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
-    print_html("<b>pirateRealmEnable</b> - Enables fishing for Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet with anemometer unlocked!</b>");
-    print_html("<b>pirateRealmDisable</b> - Disables fishing for Trash Island and garbo targetting cockroaches.");
+    print_html("<b>pirateRealmEnable</b> - Enables unlocking Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet with anemometer unlocked!</b>");
+    print_html("<b>pirateRealmDisable</b> - Disables unlocking Trash Island and garbo targetting cockroaches.");
     print("Additional Configs", "teal");
     print_html("<b>options</b> - See optional preferences you can set and configure");
     cli_execute("pUpdates check ploop");
