@@ -15,8 +15,8 @@ boolean simpleStatCheck() {
 
 void main() {
 	print("Attempting to access PirateRealm Trash island", "teal");
-	if (get_property("_questPirateRealm") == "step9") {
-		print("Already at trash island", "teal");
+	if (get_property("_lastPirateRealmIsland") == "Trash Island") {
+		print("Already pointing to trash island", "teal");
 		return;
 	}
 	if (my_adventures() < 40) {
@@ -124,6 +124,11 @@ void main() {
 		cli_execute("maximize meat");
 		cli_execute("equip June Cleaver");
 		cli_execute("equip acc1 PirateRealm eyepatch");
+		if (have_familiar($familiar[Hobo Monkey])) {
+			use_familiar($familiar[Hobo Monkey]);
+		} else if (have_familiar($familiar[Leprechaun])) {
+			use_familiar($familiar[Leprechaun]);
+		}
 		if (item_amount($item[HOA zombie eyes]) > 0 && !have_equipped($item[HOA zombie eyes]) && !simpleStatCheck()) {
 			cli_execute("equip acc2 HOA zombie eyes");
 		}
@@ -137,6 +142,11 @@ void main() {
 		cli_execute("maximize meat");
 		cli_execute("equip acc1 PirateRealm eyepatch");
 		cli_execute("equip June Cleaver");
+		if (have_familiar($familiar[Hobo Monkey])) {
+			use_familiar($familiar[Hobo Monkey]);
+		} else if (have_familiar($familiar[Leprechaun])) {
+			use_familiar($familiar[Leprechaun]);
+		}
 		if (item_amount($item[HOA zombie eyes]) > 0 && !have_equipped($item[HOA zombie eyes]) && !simpleStatCheck()) {
 			cli_execute("equip acc2 HOA zombie eyes");
 		}
@@ -145,25 +155,9 @@ void main() {
 		adv1($location[PirateRealm Island], -1, CrabFight);
 	}
 
-	#Works!
-	if ((get_property("_pirateRealmIslandMonstersDefeated").to_int() == 5) && (get_property("_lastPirateRealmIsland") != "Trash Island")) {
-		print("Unclear original purpose 1");
-		if (item_amount($item[HOA zombie eyes]) > 0 && !have_equipped($item[HOA zombie eyes]) && !simpleStatCheck()) {
-			cli_execute("equip acc2 HOA zombie eyes");
-		}
-		keepStatsLow();
-		adv1($location[Sailing the PirateRealm Seas], -1, CrabFight);
-	}
-	if ((get_property("_pirateRealmIslandMonstersDefeated").to_int() == 5) && (get_property("_lastPirateRealmIsland") != "Trash Island")) {
-		print("Unclear original purpose 2");
-		if (item_amount($item[HOA zombie eyes]) > 0 && !have_equipped($item[HOA zombie eyes]) && !simpleStatCheck()) {
-			cli_execute("equip acc2 HOA zombie eyes");
-		}
-		keepStatsLow();
-        adv1($location[Sailing the PirateRealm Seas], -1, CrabFight);
-    }
+	# Just need to point to Trash island, don't need to sail there
 	int limit_turns = 0;
-	while ((get_property("_questPirateRealm") != "step9")) {
+	while (get_property("_lastPirateRealmIsland") != "Trash Island") {
 		print("Sailing leg 2 turn: " + limit_turns);
 		if (item_amount($item[HOA zombie eyes]) > 0 && !have_equipped($item[HOA zombie eyes]) && !simpleStatCheck()) {
 			cli_execute("equip acc2 HOA zombie eyes");
@@ -171,7 +165,7 @@ void main() {
 		keepStatsLow();
 		adv1($location[Sailing the PirateRealm Seas], -1, CrabFight);
 		limit_turns = limit_turns + 1;
-		if (limit_turns >= 10) {
+		if (limit_turns >= 4) {
 			abort("ERROR: PirateRealm sailing not completed after 10 turns");
 		}
 	}
