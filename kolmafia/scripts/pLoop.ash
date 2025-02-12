@@ -264,7 +264,7 @@ boolean needToAcquireItem(item x) {
 }
 
 string saucegeyserAll(int round, monster opp, string text) {
-    if (have_skill($skill[Saucegeyser])) {
+    if (have_skill($skill[Saucegeyser]) && my_mp() >= 24) {
         return "skill Saucegeyser";
     } else {
         return "attack";
