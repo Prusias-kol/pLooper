@@ -357,7 +357,13 @@ void dmt_dupe() {
         while (get_property("encountersUntilDMTChoice").to_int() != 0){
             adv1($location[The Deep Machine Tunnels], -1, "saucegeyserAll");
         }
+        int juneCleaverEncounters = get_property("_juneCleaverEncounters").to_int();
         adv1($location[The Deep Machine Tunnels], -1, "");
+        if (juneCleaverEncounters != get_property("_juneCleaverEncounters").to_int()) {
+            print("PLOOP_DUPE: Cleaver adv likely overrode DMT NC. Rerunning DMT");
+            cli_execute("uneffect beaten up");
+            adv1($location[The Deep Machine Tunnels], -1, "");
+        } 
         set_property('choiceAdventure1119', '1');
     } else
     {
@@ -1153,8 +1159,10 @@ void reentrantHalloweenWrapper() {
                 ascendToValhalla();
             } else {
                 print("ERROR_PLOOP: Still adventures left over after", "red");
-                set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
-                set_property("prusias_ploop_preHalloweenMPA", "");
+                if (get_property("prusias_ploop_preHalloweenMPA") != "" && get_property("valueOfAdventure").to_int() == 9999) {
+                    set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                    set_property("prusias_ploop_preHalloweenMPA", "");
+                }
                 abort();
             }
         } else {
@@ -1253,12 +1261,14 @@ void reentrantHalloweenWrapper() {
             nightcap();
             print("Consider using wineglass to burn the rest of your turns for halloween!", "red");
         }
-	if (!get_property('thoth19_event_list').contains_text("halloweenEnd")) {
-        addBreakpoint("halloweenEnd");
-		cli_execute("ptrack recap");
-	}
-    set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
-    set_property("prusias_ploop_preHalloweenMPA", "");
+        if (!get_property('thoth19_event_list').contains_text("halloweenEnd")) {
+            addBreakpoint("halloweenEnd");
+            cli_execute("ptrack recap");
+        }
+        if (get_property("prusias_ploop_preHalloweenMPA") != "" && get_property("valueOfAdventure").to_int() == 9999) {
+            set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+            set_property("prusias_ploop_preHalloweenMPA", "");
+        }
     }
 }
 
@@ -1328,8 +1338,10 @@ void main(string input) {
                     reentrantWrapper();
                 }
                 if (isHalloween()) {
-                    set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
-                    set_property("prusias_ploop_preHalloweenMPA", "");
+                    if (get_property("prusias_ploop_preHalloweenMPA") != "" && get_property("valueOfAdventure").to_int() == 9999) {
+                        set_property("valueOfAdventure", get_property("prusias_ploop_preHalloweenMPA"));
+                        set_property("prusias_ploop_preHalloweenMPA", "");
+                    }
                 }
                 return;
             case "init":
