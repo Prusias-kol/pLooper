@@ -881,6 +881,7 @@ void nightcap() {
     if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
         prepPvp();
         cli_execute("pvp_mab");
+        use_familiar($familiar[Stooper]);
     }
 	//burning cape
 	if (available_amount($item[burning cape]) > 0) {
