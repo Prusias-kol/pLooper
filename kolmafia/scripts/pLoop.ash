@@ -519,7 +519,7 @@ void pre_ascend_pulls() {
             cli_execute("acquire 1 tobiko marble soda");
         if (needToAcquireItem($item[wasabi marble soda]))
             cli_execute("acquire 1 wasabi marble soda");
-        if (needToAcquireItem($item[one-day ticket to Dinseylandfill]))
+        if (!get_property("stenchAirportAlways").to_boolean() && needToAcquireItem($item[one-day ticket to Dinseylandfill]))
             cli_execute("acquire 1 one-day ticket to Dinseylandfill");
     }
 
