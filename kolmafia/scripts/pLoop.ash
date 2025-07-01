@@ -53,6 +53,7 @@ prusias_ploop_preAscendClanStashAcquireList = string,string...
 prusias_ploop_alwaysPvP = boolean
 prusias_ploop_leg1PvP = boolean
 prusias_ploop_disableOffhandRemarkable = boolean
+prusias_ploop_neverPvpOverride = boolean
 
 prusias_ploop_detectHalloween = boolean
 prusias_ploop_tryDmtDupe = boolean
@@ -170,6 +171,7 @@ void optional_help_info() {
     print("Optional Preferences", "teal");
     print_html("<b>prusias_ploop_alwaysPvP</b> - Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO.");
     print_html("<b>prusias_ploop_leg1PvP</b> - Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo.");
+    print_html("<b>prusias_ploop_neverPvpOverride</b> - Set to true to disable all pvp related actions. Useful if you don't want to break stone or get pvp fights at all.");
     print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
     print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
     print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
@@ -377,6 +379,10 @@ void dmt_dupe() {
 }
 
 void prepPvp() {
+    if (get_property("prusias_ploop_neverPvpOverride").to_boolean()) {
+        print("PLOOP: PVP is disabled by user preference", "red");
+        return;
+    }
     //break stone
     if (!hippy_stone_broken())
         visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
@@ -880,7 +886,11 @@ void nightcap() {
     }
     if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
         prepPvp();
-        cli_execute("pvp_mab");
+        if (get_property("prusias_ploop_neverPvpOverride").to_boolean()) {
+            print("PLOOP: PVP is disabled by user preference. Skipping pvp script", "red");
+        } else {
+            cli_execute("pvp_mab");
+        }
         use_familiar($familiar[Stooper]);
     }
 	//burning cape
@@ -951,8 +961,9 @@ void reentrantWrapper(string start, string end) {
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
     if (get_property("ascensionsToday").to_int() == 0) {
         //break hippy stone if leg 1
-        if (get_property("prusias_ploop_leg1PvP").to_boolean()
-                || get_property("prusias_ploop_alwaysPvP").to_boolean()) {
+        if (!get_property("prusias_ploop_neverPvpOverride").to_boolean() &&
+            (get_property("prusias_ploop_leg1PvP").to_boolean()
+                || get_property("prusias_ploop_alwaysPvP").to_boolean())) {
             if (!hippy_stone_broken())
                 visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
         }
@@ -1319,7 +1330,7 @@ void main(string input) {
         set_property("prusias_ploop_preHalloweenMPA", "");
     }
     //break hippy stone if always pvp
-    if (get_property("prusias_ploop_alwaysPvP").to_boolean()) {
+    if (!get_property("prusias_ploop_neverPvpOverride").to_boolean() && get_property("prusias_ploop_alwaysPvP").to_boolean()) {
         if (!hippy_stone_broken())
             visit_url("peevpee.php?action=smashstone&pwd&confirm=on", true);
     }
