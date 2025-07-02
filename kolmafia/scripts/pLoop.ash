@@ -999,7 +999,11 @@ void reentrantWrapper(string start, string end) {
             if (!get_property('thoth19_event_list').contains_text("wineglassDone"))
                 addBreakpoint("wineglassDone");
             if (pvp_attacks_left() > 0) {
-                cli_execute("pvp_mab");
+                if (get_property("prusias_ploop_neverPvpOverride").to_boolean()) {
+                    print("PLOOP: PVP is disabled by user preference", "red");
+                } else {
+                    cli_execute("pvp_mab");
+                }
             }
             if (my_adventures() == 0) {
                 prepPvp();
@@ -1165,7 +1169,11 @@ void reentrantHalloweenWrapper() {
             if (!get_property('thoth19_event_list').contains_text("spookyWineglassDone"))
                 addBreakpoint("spookyWineglassDone");
             if (pvp_attacks_left() > 0) {
-                cli_execute("pvp_mab");
+                if (get_property("prusias_ploop_neverPvpOverride").to_boolean()) {
+                    print("PLOOP: PVP is disabled by user preference", "red");
+                } else {
+                    cli_execute("pvp_mab");
+                }
             }
             if (my_adventures() == 0) {
                 ascendToValhalla();
@@ -1186,7 +1194,11 @@ void reentrantHalloweenWrapper() {
             }
             if (pvp_attacks_left() > 0) {
                 prepPvp();
-                cli_execute("pvp_mab");
+                if (get_property("prusias_ploop_neverPvpOverride").to_boolean()) {
+                    print("PLOOP: PVP is disabled by user preference", "red");
+                } else {
+                    cli_execute("pvp_mab");
+                }
             }
             ascendToValhalla();
         }
