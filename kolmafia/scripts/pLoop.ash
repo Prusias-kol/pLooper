@@ -153,11 +153,10 @@ void ploopHelper() {
     print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
     print("To use the script, please run ploop init before you run ploop fullday");
     print("Setup Commands - At least one of the inits must be run","teal");
-    print_html("<b>init</b> - Initializes pLooper CS. Mandatory for the script to work");
-    //smolinit
-    print_html("<b>smolinit</b> - Initializes pLooper for smol. Mandatory for the script to work");
-    //you, robot
-    print_html("<b>roboinit</b> - Initializes pLooper for You,Robot. Mandatory for the script to work");
+    print_html("<b>init</b> - Generic init that prompts for pathId. Use this for paths without a dedicated init.");
+    print_html("<b>csinit</b> - Initializes pLooper for Community Service (pathId 25).");
+    print_html("<b>smolinit</b> - Initializes pLooper for A Shrunken Adventurer am I (pathId 49).");
+    print_html("<b>roboinit</b> - Initializes pLooper for You, Robot (pathId 41).");
     print("Saves Feature - Lets you quickly hotswap between run types", "teal");
     print_html("<b>listSaves</b> - Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves");
     print_html("<b>save (name)</b> - Saves current state of pLooper to a file with the given name");
@@ -213,6 +212,22 @@ string nightcapOutfitPrompt = "Provide the exact name of the nightcap outfit you
 string pathIdPrompt = "What path id should be used?";
 
 void init() {
+    set_property("prusias_ploop_pathId", user_prompt(pathIdPrompt));
+    set_property("prusias_ploop_homeClan", user_prompt(homeClanPrompt));
+    set_property("prusias_ploop_garboWorkshed", user_prompt(workshedPrompt));
+    set_property("prusias_ploop_preAscendGarden", user_prompt(gardenPrompt));
+    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
+    set_property("prusias_ploop_moonId", user_prompt(moonPrompt));
+    set_property("prusias_ploop_classId", user_prompt(classPrompt));
+    set_property("prusias_ploop_astralPet", user_prompt(astralPetPrompt));
+    set_property("prusias_ploop_astralDeli", user_prompt(astralDeliPrompt));
+    set_property("prusias_ploop_ascendGender", user_prompt(genderPrompt));
+    set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
+    set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt(leg2WorkshedPrompt));
+    set_property("prusias_ploop_nightcapOutfit", user_prompt(nightcapOutfitPrompt));
+    
+}
+void csInit() {
     set_property("prusias_ploop_homeClan", user_prompt(homeClanPrompt));
     set_property("prusias_ploop_garboWorkshed", user_prompt(workshedPrompt));
     set_property("prusias_ploop_preAscendGarden", user_prompt(gardenPrompt));
@@ -1386,6 +1401,9 @@ void main(string input) {
                 return;
             case "init":
                 init();
+                return;
+            case "csinit":
+                csInit();
                 return;
             case "smolinit":
                 smolInit();
