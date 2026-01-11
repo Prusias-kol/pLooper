@@ -1034,11 +1034,6 @@ void reentrantWrapper(string start, string end) {
         }
         if (!get_property('kingLiberated').to_boolean() && get_property("prusias_ploop_pathId") == "49" && (get_property("questL13Final") == "step12" || get_property("questL13Final") == "step13" || get_property("questL13Final") == "finished")) {
             //still king not liberated
-            if (available_amount($item[10058]) > 0) {
-                int numToSauge = min(23,item_amount($item[magical sausage casing]));
-                cli_execute("make " + numToSauge + " magical sausage");
-                cli_execute("eat " + numToSauge + " magical sausage");
-            }  
             if (available_amount($item[10929]) > 0 && available_amount($item[astral pilsner]) >= 5) {
                 cli_execute("cast ode to booze");
                 if (my_inebriety() < inebriety_limit()) {
@@ -1054,17 +1049,28 @@ void reentrantWrapper(string start, string end) {
             }
             cli_execute("hagnk all");
             cli_execute("refresh all");
+            // Now we need to clear smol stomach
+            if (my_fullness() > fullness_limit()) {
+                use($item[spice melange]); 
+                use($item[distention pill]); 
+                use($item[cuppa voraci tea]);
+            }
             if (available_amount($item[10929]) > 0 && my_inebriety() > inebriety_limit()) {
                 while (get_property("_sweatOutSomeBoozeUsed").to_int() < 3) {
                     equip($item[designer sweatpants]);
                     use_skill(1, $skill[Sweat Out Some Booze]);
                 }
-                cli_execute("use cuppa Sobrie tea");
-                cli_execute("use synthetic dog hair pill");
+                if (my_inebriety() > inebriety_limit()) {
+                    cli_execute("use synthetic dog hair pill");
+                }
+                if (my_inebriety() > inebriety_limit()) {
+                    use($item[cuppa Sobrie tea]);
+                }
                 if (my_inebriety() > inebriety_limit()) {
                     print("ERROR_PLOOP: Smol organ clearing failed. Please ping Prusais in ASS discord", "red");
                 }
             }
+            
         }
         if (!get_property('kingLiberated').to_boolean()) {
             visit_url("place.php?whichplace=nstower&action=ns_11_prism");
