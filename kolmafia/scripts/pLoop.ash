@@ -63,6 +63,7 @@ prusias_ploop_optOutSmoking = boolean
 prusias_ploop_nightcapMPA = int
 prusias_ploop_garboAdditionalArg = string
 prusias_ploop_breakfastAdditionalScript = string
+prusias_ploop_alwaysSteelOrgan = boolean
 
 Smol specific
 prusias_ploop_smolNoSaladFork = boolean
@@ -80,6 +81,14 @@ boolean [string] skip_props = {
     "prusias_ploop_clanStashTakenFrom": true,
     "prusias_ploop_validSaves": true
 };
+
+// Path IDs that require steel organ pull
+boolean[string] steel_organ_paths = {
+    "49": true, //smol
+    "41": true, //you, robot
+    "51": true //ih8u
+};
+
 string filePrefix = "data/ploop/saves/";
 
 void listSaves() {
@@ -180,6 +189,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_nightcapMPA</b> - False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap.");
     print_html("<b>prusias_ploop_garboAdditionalArg</b> - Additional argument to pass to garbo.");
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
+    print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
     print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
@@ -1075,7 +1085,7 @@ void reentrantWrapper(string start, string end) {
         if (!get_property('kingLiberated').to_boolean()) {
             visit_url("place.php?whichplace=nstower&action=ns_11_prism");
         }
-        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_alwaysSteelOrgan").to_boolean() || (steel_organ_paths contains get_property("prusias_ploop_pathId")))) {
             cli_execute("hagnk all");
             cli_execute("refresh all");
             //steel liver
@@ -1244,7 +1254,7 @@ void reentrantHalloweenWrapper() {
         if (!get_property('kingLiberated').to_boolean()) {
             visit_url("place.php?whichplace=nstower&action=ns_11_prism");
         }
-        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_pathId") == "49" || get_property("prusias_ploop_pathId") == "41")) {
+        if (get_property("_prusias_ploop_got_steel_organ") != "true" && (get_property("prusias_ploop_alwaysSteelOrgan").to_boolean() || (steel_organ_paths contains get_property("prusias_ploop_pathId")))) {
             cli_execute("hagnk all");
             cli_execute("refresh all");
             //steel liver
