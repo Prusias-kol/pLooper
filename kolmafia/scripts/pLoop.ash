@@ -74,12 +74,16 @@ _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
 prusias_ploop_clanStashTakenFrom - return to right clan
 prusias_ploop_validSaves - list of valid save states
+prusias_ploop_runNextCompletedChunk - last chunk completed by ploop run next
+prusias_ploop_runNextDate - date the run next tracker was last updated
 */
 boolean [string] skip_props = {
     "_prusias_ploop_got_steel_organ": true,
     "prusias_ploop_takenFromClanStashItems": true,
     "prusias_ploop_clanStashTakenFrom": true,
-    "prusias_ploop_validSaves": true
+    "prusias_ploop_validSaves": true,
+    "prusias_ploop_runNextCompletedChunk": true,
+    "prusias_ploop_runNextDate": true
 };
 
 // Path IDs that require steel organ pull
@@ -87,6 +91,19 @@ boolean[string] steel_organ_paths = {
     "49": true, //smol
     "41": true, //you, robot
     "51": true //ih8u
+};
+
+record PloopChunk { string name; string description; };
+
+PloopChunk[int] PLOOP_CHUNKS = {
+    new PloopChunk("breakfast", "Runs leg 1 setup and breakfast."),
+    new PloopChunk("leg1garbo", "Runs the leg 1 garbo phase."),
+    new PloopChunk("preascend", "Prepares organs, PvP, and remaining adventures for ascension."),
+    new PloopChunk("ascend", "Enters Valhalla and starts the configured ascension."),
+    new PloopChunk("loopscript", "Runs the configured loop script."),
+    new PloopChunk("postscriptprep", "Finishes the run and prepares resources for leg 2."),
+    new PloopChunk("leg2garbo", "Runs the leg 2 garbo phase."),
+    new PloopChunk("nightcap", "Runs nightcap and end-of-loop tracking.")
 };
 
 string filePrefix = "data/ploop/saves/";
@@ -150,14 +167,29 @@ void loadAllProperties(string fileName) {
 
 void printPloopChunkHelp() {
     print("Runnable Chunks", "teal");
-    print_html("<b>run breakfast</b> - Runs leg 1 setup and breakfast.");
-    print_html("<b>run leg1garbo</b> - Runs the leg 1 garbo phase.");
-    print_html("<b>run preascend</b> - Prepares organs, PvP, and remaining adventures for ascension.");
-    print_html("<b>run ascend</b> - Enters Valhalla and starts the configured ascension.");
-    print_html("<b>run loopscript</b> - Runs the configured loop script.");
-    print_html("<b>run postscriptprep</b> - Finishes the run and prepares resources for leg 2.");
-    print_html("<b>run leg2garbo</b> - Runs the leg 2 garbo phase.");
-    print_html("<b>run nightcap</b> - Runs nightcap and end-of-loop tracking.");
+    print_html("<b>run next</b> - Runs the next chunk tracked for today.");
+    foreach index, chunk in PLOOP_CHUNKS {
+        print_html("<b>run " + chunk.name + "</b> - " + chunk.description);
+    }
+}
+
+boolean isPloopChunk(string name) {
+    foreach index, chunk in PLOOP_CHUNKS
+        if (chunk.name == name) return true;
+    return false;
+}
+
+int getPloopChunkIndex(string name) {
+    foreach index, chunk in PLOOP_CHUNKS
+        if (chunk.name == name) return index;
+    return -1;
+}
+
+void resetRunNextTrackerIfNeeded() {
+    if (get_property("prusias_ploop_runNextDate") != today_to_string()) {
+        set_property("prusias_ploop_runNextDate", today_to_string());
+        set_property("prusias_ploop_runNextCompletedChunk", "");
+    }
 }
 
 void ploopHelper() {
@@ -1328,6 +1360,19 @@ void runNightcapPhase(boolean halloween) {
     }
 }
 
+void executePloopChunk(string chunk, boolean halloween) {
+    switch (chunk) {
+        case "breakfast": runBreakfastPhase(halloween); break;
+        case "leg1garbo": runLeg1GarboPhase(halloween); break;
+        case "preascend": runPreAscensionPhase(halloween); break;
+        case "ascend": runAscensionPhase(); break;
+        case "loopscript": runLoopScriptPhase(halloween); break;
+        case "postscriptprep": runPostScriptPrepPhase(halloween); break;
+        case "leg2garbo": runLeg2GarboPhase(halloween); break;
+        case "nightcap": runNightcapPhase(halloween); break;
+    }
+}
+
 void reentrantWrapper() {
     boolean halloween = isHalloween();
     cli_execute("/whitelist " + get_property("prusias_ploop_homeClan"));
@@ -1335,14 +1380,9 @@ void reentrantWrapper() {
         enableHalloweenMode();
     }
 
-    runBreakfastPhase(halloween);
-    runLeg1GarboPhase(halloween);
-    runPreAscensionPhase(halloween);
-    runAscensionPhase();
-    runLoopScriptPhase(halloween);
-    runPostScriptPrepPhase(halloween);
-    runLeg2GarboPhase(halloween);
-    runNightcapPhase(halloween);
+    foreach index, chunk in PLOOP_CHUNKS {
+        executePloopChunk(chunk.name, halloween);
+    }
 
     if (!halloween) {
         print("Plooping Complete!", "teal");
@@ -1358,36 +1398,38 @@ void runPloopChunk(string chunk) {
         enableHalloweenMode();
     }
 
-    switch (chunk) {
-        case "breakfast":
-            runBreakfastPhase(halloween);
-            break;
-        case "leg1garbo":
-            runLeg1GarboPhase(halloween);
-            break;
-        case "preascend":
-            runPreAscensionPhase(halloween);
-            break;
-        case "ascend":
-            runAscensionPhase();
-            break;
-        case "loopscript":
-            runLoopScriptPhase(halloween);
-            break;
-        case "postscriptprep":
-            runPostScriptPrepPhase(halloween);
-            break;
-        case "leg2garbo":
-            runLeg2GarboPhase(halloween);
-            break;
-        case "nightcap":
-            runNightcapPhase(halloween);
-            break;
-    }
+    executePloopChunk(chunk, halloween);
 
     if (halloween) {
         restoreHalloweenMPA();
     }
+}
+
+void runNextPloopChunk() {
+    resetRunNextTrackerIfNeeded();
+
+    string completedChunk = get_property("prusias_ploop_runNextCompletedChunk");
+    int nextIndex = 0;
+    if (completedChunk != "") {
+        int completedIndex = getPloopChunkIndex(completedChunk);
+        if (completedIndex < 0) {
+            print("ERROR_PLOOP: Invalid run next tracker value: " + completedChunk, "red");
+            print("Clear prusias_ploop_runNextCompletedChunk before running again.", "red");
+            return;
+        }
+        nextIndex = completedIndex + 1;
+    }
+
+    if (nextIndex >= PLOOP_CHUNKS.count()) {
+        print("All pLoop chunks have been completed by run next today.", "teal");
+        return;
+    }
+
+    string nextChunk = PLOOP_CHUNKS[nextIndex].name;
+    print("Running next pLoop chunk: " + nextChunk, "teal");
+    runPloopChunk(nextChunk);
+    set_property("prusias_ploop_runNextCompletedChunk", nextChunk);
+    print("Completed pLoop chunk: " + nextChunk, "teal");
 }
 
 void clearAcquisitionList() {
@@ -1444,21 +1486,16 @@ void main(string input) {
                 }
                 i = i + 1;
                 string phase = commands[i].to_lower_case();
-                switch (phase) {
-                    case "breakfast":
-                    case "leg1garbo":
-                    case "preascend":
-                    case "ascend":
-                    case "loopscript":
-                    case "postscriptprep":
-                    case "leg2garbo":
-                    case "nightcap":
-                        runPloopChunk(phase);
-                        return;
-                    default:
-                        print("Unknown pLoop phase: " + phase, "red");
-                        return;
+                if (phase == "next") {
+                    runNextPloopChunk();
+                    return;
                 }
+                if (!isPloopChunk(phase)) {
+                    print("Unknown pLoop phase: " + phase, "red");
+                    return;
+                }
+                runPloopChunk(phase);
+                return;
             case "init":
                 init();
                 return;
