@@ -167,7 +167,8 @@ void loadAllProperties(string fileName) {
 
 void printPloopChunkHelp() {
     print("Runnable Chunks", "teal");
-    print_html("<b>run next</b> - Runs the next chunk tracked for today.");
+    print_html("<b>run next</b> - Runs the next chunk tracked for today. <b>prusias_ploop_runNextCompletedChunk</b> stores exactly one of the chunk names listed below.");
+    print("---");
     foreach index, chunk in PLOOP_CHUNKS {
         print_html("<b>run " + chunk.name + "</b> - " + chunk.description);
     }
