@@ -236,7 +236,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
     print("Disables", "teal");
-    print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable spending 1k meat on maintaining kingdom smoke supply for loop leveling");
+    print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked.");
     print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
     print("Smol Specific", "teal");
     print_html("<b>prusias_ploop_smolNoSaladFork</b> - Set to true to disable preparing a salad fork before ascension for smol");
@@ -684,9 +684,9 @@ void ascendToValhalla() {
 
     if (get_property("getawayCampsiteUnlocked").to_boolean() && get_property("prusias_ploop_optOutSmoking").to_lower_case() != "true") {
         //smoke tax
-        int tryNumSmokes = 10;
+        int tryNumSmokes = 4;
         if (item_amount($item[stick of firewood]) < tryNumSmokes) {
-            cli_execute("buy " + tryNumSmokes + " stick of firewood @100");
+            cli_execute("buy " + tryNumSmokes + " stick of firewood @250");
         }
 
         int smoke = 0;
