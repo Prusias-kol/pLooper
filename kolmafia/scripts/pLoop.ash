@@ -815,7 +815,8 @@ void garboUsage(string x) {
     }
     shrugAT();
     if (!get_property("_essentialTofuUsed").to_boolean()) {
-        cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
+        if (item_amount($item[essential tofu]) == 0)
+            cli_execute("buy 1 essential tofu @" + (get_property("valueOfAdventure").to_int() * 4));
         if (item_amount($item[essential tofu]) >= 1) {
             cli_execute("use essential tofu");
         }
