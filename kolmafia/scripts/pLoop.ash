@@ -761,7 +761,9 @@ void ascendToValhalla() {
     }
 	//ascend
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (pathId == 49 || pathId == 41) {
+    if (pathId == 49 || pathId == 41 || pathId == 55) {
+        //55 is 11037 Leagues Under The Sea; it opens on a NC that must be cleared
+        //manually before the ascension script can start
         visit_url('main.php'); while (handling_choice()) {run_choice(1);}
     }
 
