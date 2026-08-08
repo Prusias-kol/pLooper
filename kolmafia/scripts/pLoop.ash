@@ -60,6 +60,7 @@ prusias_ploop_tryDmtDupe = boolean
 prusias_ploop_dmtDupeItemId = int
 prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
+prusias_ploop_smokeMessage = string - message for pre-ascension campfire smokes. if empty, uses the default
 prusias_ploop_nightcapMPA = int
 prusias_ploop_garboAdditionalArg = string
 prusias_ploop_breakfastAdditionalScript = string
@@ -214,6 +215,8 @@ void ploopHelper() {
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
+    print_html("<b>smokemessage (message)</b> - Sets the message written by the campfire smokes before ascension (spaces ok, 100 char max). Use %n where you want the smoke number. Run with no message to see the current one.");
+    print_html("<b>clearsmokemessage</b> - Goes back to the default campfire smoke message.");
     print_html("<b>pirateRealmEnable</b> - Enables unlocking Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet with anemometer unlocked!</b>");
     print_html("<b>pirateRealmDisable</b> - Disables unlocking Trash Island and garbo targetting cockroaches.");
     print("Additional Configs", "teal");
@@ -235,6 +238,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_garboAdditionalArg</b> - Additional argument to pass to garbo.");
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
+    print_html("<b>prusias_ploop_smokeMessage</b> - Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked.");
     print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
@@ -674,6 +678,41 @@ void pre_ascend_pulls() {
     }
 }
 
+string defaultSmokeMessage = "Thanks Prusias for writing Ploop!";
+
+//mafia splits the choiceAdventure1394 value on & to find the form fields, so an & in the
+//message would break out of it. Everything else gets URL encoded for us and survives as typed.
+//The game itself cuts the signal off at 100 characters. Warning here rather than in
+//setSmokeMessage so a message set by hand or restored from a save gets flagged too.
+string smokeMessage(int smokeNum) {
+    string message = get_property("prusias_ploop_smokeMessage");
+    if (message == "") {
+        message = `{smokeNum} {defaultSmokeMessage}`;
+    } else {
+        message = message.replace_string("%n", `{smokeNum}`);
+    }
+    message = message.replace_string("&", "and");
+    if (message.length() > 100) {
+        print("Smoke signals are capped at 100 characters, so this message gets cut short.", "red");
+        message = message.substring(0, 100);
+    }
+    return message;
+}
+
+void printSmokeMessage() {
+    string prefix = "Campfire smokes will say: ";
+    if (get_property("prusias_ploop_smokeMessage") == "") {
+        prefix = "No custom message set, so campfire smokes will say: ";
+    }
+    print(prefix + smokeMessage(1), "teal");
+    print_html("Set your own with <b>ploop smokemessage (your message)</b> or go back to the default with <b>ploop clearsmokemessage</b>. Use <b>%n</b> anywhere you want the smoke number. 100 character max, and an <b>&amp;</b> becomes <b>and</b>.");
+}
+
+void setSmokeMessage(string message) {
+    set_property("prusias_ploop_smokeMessage", message);
+    print("Campfire smokes will now say: " + smokeMessage(1), "teal");
+}
+
 void ascendToValhalla() {
     pre_ascend_pulls();
 
@@ -696,7 +735,7 @@ void ascendToValhalla() {
 		smoke = smoke + 1;
             catch {
                 cli_execute("acquire campfire smoke");
-                set_property("choiceAdventure1394", "1&message=" + smoke + " Thanks Prusias for writing Ploop!");
+                set_property("choiceAdventure1394", "1&message=" + smokeMessage(smoke));
                 use(1,$item[campfire smoke]);
             } 
         }
@@ -761,7 +800,9 @@ void ascendToValhalla() {
     }
 	//ascend
 	visit_url(`afterlife.php?pwd&action=ascend&confirmascend=1&whichsign={moonId}&gender={gender}&whichclass={classId}&whichpath={pathId}&asctype={type}&nopetok=1&noskillsok=1&lamesignok=1&lamepatok=1`,true,true);
-    if (pathId == 49 || pathId == 41) {
+    if (pathId == 49 || pathId == 41 || pathId == 55) {
+        //55 is 11037 Leagues Under The Sea; it opens on a NC that must be cleared
+        //manually before the ascension script can start
         visit_url('main.php'); while (handling_choice()) {run_choice(1);}
     }
 
@@ -1526,6 +1567,27 @@ void main(string input) {
                 } else {
                     print("Please provide an item name as an argument.", "red");
                 }
+                return;
+            case "smokemessage":
+                if(i + 1 < commands.count())
+                {
+                    i = i+1;
+                    string smokeInput = "";
+                    while (i < commands.count()) {
+                        if (smokeInput != "") {
+                            smokeInput += " ";
+                        }
+                        smokeInput += commands[i];
+                        i++;
+                    }
+                    setSmokeMessage(smokeInput);
+                } else {
+                    printSmokeMessage();
+                }
+                return;
+            case "clearsmokemessage":
+                set_property("prusias_ploop_smokeMessage", "");
+                print("Campfire smoke message reset to the default: " + smokeMessage(1), "teal");
                 return;
             case "clearclanstashlist":
                 clearClanStashAcquireList();
