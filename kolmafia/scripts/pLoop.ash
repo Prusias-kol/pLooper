@@ -70,6 +70,9 @@ Smol specific
 prusias_ploop_smolNoSaladFork = boolean
 prusias_ploop_smolNoFrostyMug = boolean
 
+11037 Leagues Under The Sea specific
+prusias_ploop_utsCodpieceCheck = boolean - fill The Eternity Codpiece with five unblemished pearls before ascending into path 55, buying any that are missing at up to valueOfAdventure * 10 * 2 meat each
+
 Script state tracking
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
@@ -245,6 +248,8 @@ void optional_help_info() {
     print("Smol Specific", "teal");
     print_html("<b>prusias_ploop_smolNoSaladFork</b> - Set to true to disable preparing a salad fork before ascension for smol");
     print_html("<b>prusias_ploop_smolNoFrostyMug</b> - Set to true to disable preparing a frosty mug before ascension for smol");
+    print("11037 Leagues Under The Sea Specific", "teal");
+    print_html("<b>prusias_ploop_utsCodpieceCheck</b> - Set to true to make sure The Eternity Codpiece holds five unblemished pearls before ascending into path 55. Gems survive the Astral Gash and the path blocks pulls, so this is how the pearls the Nautical Seaceress needs get into the run. Missing pearls are bought from the mall at up to <b>valueOfAdventure * 10 * 2</b> meat each, and this runs before every path 55 ascension, so budget for up to five of them each time.");
 
 }
 
@@ -613,6 +618,101 @@ void prepareLegendFoods() {
     makeLegendFoodIfNeeded($item[pizza of legend]);
 }
 
+//Gems mounted in The Eternity Codpiece survive the Astral Gash, and 11037 Leagues Under
+//The Sea (path 55) blocks pulling the quest items, so five unblemished pearls left in the
+//codpiece is how a run starts with the pearls the Nautical Seaceress needs. Top the
+//codpiece up before we ascend. Pearls are still farmable in run (one per day from each of
+//the five Sea zones), so coming up short warns rather than stopping the loop.
+void utsCodpieceCheck() {
+    if (!get_property("prusias_ploop_utsCodpieceCheck").to_boolean()) return;
+    if (get_property("prusias_ploop_pathId").to_int() != 55) return;
+
+    item pearl = $item[unblemished pearl];
+    item cod = $item[The Eternity Codpiece];
+    //mafia opens the decorate page out of your inventory, so a codpiece sitting in the
+    //closet, in storage or in the clan stash cannot be mounted into. Check what we can
+    //actually reach, not what we merely own, or we spend the meat and mount nothing.
+    if (item_amount(cod) == 0 && !have_equipped(cod) && closet_amount(cod) > 0)
+        take_closet(1, cod);
+    if (item_amount(cod) == 0 && !have_equipped(cod) && can_interact() && storage_amount(cod) > 0)
+        take_storage(1, cod);
+    if (item_amount(cod) == 0 && !have_equipped(cod)) {
+        print("ERROR_PLOOP: prusias_ploop_utsCodpieceCheck is set but The Eternity Codpiece is not in your inventory.", "red");
+        print_html("Set <b>prusias_ploop_utsCodpieceCheck</b> to false to skip this step");
+        abort();
+    }
+
+    //mafia learns the codpiece slots from api.php, so resync before counting what is in them
+    cli_execute("refresh status");
+    int mounted = 0;
+    foreach s in $slots[codpiece1, codpiece2, codpiece3, codpiece4, codpiece5] {
+        if (equipped_item(s) == pearl)
+            mounted = mounted + 1;
+    }
+    if (mounted >= 5) {
+        print("Codpiece already holds five unblemished pearls.", "blue");
+        return;
+    }
+
+    int needed = 5 - mounted;
+    print(`Codpiece holds {mounted} unblemished pearl(s); filling the other {needed} slot(s).`, "blue");
+
+    //never pay for a pearl we already own somewhere else
+    if (item_amount(pearl) < needed && closet_amount(pearl) > 0)
+        take_closet(min(needed - item_amount(pearl), closet_amount(pearl)), pearl);
+    if (item_amount(pearl) < needed && can_interact() && storage_amount(pearl) > 0)
+        take_storage(min(needed - item_amount(pearl), storage_amount(pearl)), pearl);
+
+    if (item_amount(pearl) < needed) {
+        int toBuy = needed - item_amount(pearl);
+        //farming a pearl in run costs about ten turns, so a pearl is worth ten adventures.
+        //Buy at up to twice that.
+        int maxPrice = get_property("valueOfAdventure").to_int() * 10 * 2;
+        //mall_price caches with no age limit, and this decides whether to spend six figures,
+        //so insist on a price from within the last day
+        int price = mall_price(pearl, 1.0);
+        if (maxPrice <= 0) {
+            print("ERROR_PLOOP: valueOfAdventure is 0 or less, so there is no ceiling to buy unblemished pearls under.", "red");
+        } else if (price <= 0) {
+            print("ERROR_PLOOP: no mall price for unblemished pearl, so none were bought.", "red");
+        } else if (price >= maxPrice) {
+            print(`Unblemished pearls are {price} meat, at or over the {maxPrice} meat ceiling (valueOfAdventure * 10 * 2), so none were bought.`, "red");
+            //nothing can be listed for less than it autosells for, so a low valueOfAdventure
+            //puts this ceiling out of reach no matter what the market is doing
+            if (maxPrice <= autosell_price(pearl))
+                print(`No unblemished pearl can be listed below the {autosell_price(pearl)} meat it autosells for, so that ceiling can never be met. Raise valueOfAdventure if you want this to buy.`, "red");
+        } else {
+            //buy gets the ceiling too, so a price that moves mid purchase cannot beat it.
+            //Its limit is inclusive, hence the -1 to stay strictly under the ceiling.
+            buy(toBuy, pearl, maxPrice - 1);
+        }
+    }
+
+    foreach s in $slots[codpiece1, codpiece2, codpiece3, codpiece4, codpiece5] {
+        if (equipped_item(s) == pearl)
+            continue;
+        //equip() acquires a missing gem itself, at mafia's autoBuyPriceLimit rather than
+        //ours, so it must never be called without a pearl already in hand
+        if (item_amount(pearl) == 0)
+            break;
+        //a displaced gem goes back to inventory, but an untradeable one that Hagnk's will
+        //not hand back (baseball diamond) is out of reach for the whole run, so say so loudly
+        if (equipped_item(s) != $item[none])
+            print("Prying " + equipped_item(s).to_string() + " out of the codpiece to make room for a pearl.", "red");
+        equip(s, pearl);
+    }
+
+    mounted = 0;
+    foreach s in $slots[codpiece1, codpiece2, codpiece3, codpiece4, codpiece5] {
+        if (equipped_item(s) == pearl)
+            mounted = mounted + 1;
+    }
+    if (mounted < 5)
+        print(`ERROR_PLOOP: only {mounted} of 5 codpiece slots hold an unblemished pearl. Ascending anyway; the rest have to be farmed in run.`, "red");
+    else
+        print("Codpiece loaded: five unblemished pearls will carry into the run.", "blue");
+}
+
 void pre_ascend_pulls() {
     //Acquire Potential CS Pulls
     if (get_property("prusias_ploop_ascensionType") == "" || get_property("prusias_ploop_ascensionType").to_int() < 3) {
@@ -656,6 +756,9 @@ void pre_ascend_pulls() {
         }
         
     }
+
+    //pearls for 11037 Leagues Under The Sea, smuggled in via The Eternity Codpiece
+    utsCodpieceCheck();
 
     //custom acquisition list
     foreach x, it in get_property("prusias_ploop_preAscendAcquireList").split_string('(?<!\\\\)(, |,)') {
