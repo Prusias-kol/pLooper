@@ -1001,25 +1001,33 @@ void postRunNoGarbo() {
     
 
     //insert asdon buffing
+    //The Asdon holds one driving style at a time, and garbo's cowo mode drives it
+    //waterproofly. Observantly turns bought here are wiped by the next garbo run and
+    //bought back by the leg after it, so both sides pay for fuel every cycle. Leave
+    //the workshed to garbo whenever cowo is among the arguments it is passed.
     if (get_workshed() == $item[Asdon Martin keyfob (on ring)]) {
-        int numTurns = 1260; //set this value manually
-        int numBuffs = numTurns/30 + 1;
-        int numPies = (numBuffs * 37)/150 + 1;
-        int numSodaBreads = (numBuffs * 37)/6 + 1;
-        if (available_amount($item[pie man was not meant to eat]) < numPies) {
-            cli_execute("buy " + numPies + " pie man was not meant to eat @3000");
+        if (get_property("prusias_ploop_garboAdditionalArg").contains_text("cowo")) {
+            print("Skipping asdon buffing; garbo is running cowo and drives waterproofly.");
         } else {
-            cli_execute("acquire " + numPies + " pie man was not meant to eat");
-        }
-        if (available_amount($item[pie man was not meant to eat]) < numPies) {
-            cli_execute("make " + numSodaBreads + " loaf of soda bread");
-            cli_execute("asdonmartin fuel " + numSodaBreads + " loaf of soda bread");
-        } else {
-            cli_execute("asdonmartin fuel " + numPies + " pie man was not meant to eat");
-        }
+            int numTurns = 1260; //set this value manually
+            int numBuffs = numTurns/30 + 1;
+            int numPies = (numBuffs * 37)/150 + 1;
+            int numSodaBreads = (numBuffs * 37)/6 + 1;
+            if (available_amount($item[pie man was not meant to eat]) < numPies) {
+                cli_execute("buy " + numPies + " pie man was not meant to eat @3000");
+            } else {
+                cli_execute("acquire " + numPies + " pie man was not meant to eat");
+            }
+            if (available_amount($item[pie man was not meant to eat]) < numPies) {
+                cli_execute("make " + numSodaBreads + " loaf of soda bread");
+                cli_execute("asdonmartin fuel " + numSodaBreads + " loaf of soda bread");
+            } else {
+                cli_execute("asdonmartin fuel " + numPies + " pie man was not meant to eat");
+            }
 
-        while (get_fuel() >= 37) {
-            cli_execute("asdonmartin drive observantly");
+            while (get_fuel() >= 37) {
+                cli_execute("asdonmartin drive observantly");
+            }
         }
     }
     if (available_amount($item[5553]) > 0) {
