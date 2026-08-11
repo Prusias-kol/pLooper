@@ -218,8 +218,6 @@ void ploopHelper() {
     print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
     print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
     print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
-    print_html("<b>smokemessage (message)</b> - Sets the message written by the campfire smokes before ascension (spaces ok, 100 char max). Use %n where you want the smoke number. Run with no message to see the current one.");
-    print_html("<b>clearsmokemessage</b> - Goes back to the default campfire smoke message.");
     print_html("<b>pirateRealmEnable</b> - Enables unlocking Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet with anemometer unlocked!</b>");
     print_html("<b>pirateRealmDisable</b> - Disables unlocking Trash Island and garbo targetting cockroaches.");
     print("Additional Configs", "teal");
