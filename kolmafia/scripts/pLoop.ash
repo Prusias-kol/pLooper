@@ -1677,27 +1677,6 @@ void main(string input) {
                     print("Please provide an item name as an argument.", "red");
                 }
                 return;
-            case "smokemessage":
-                if(i + 1 < commands.count())
-                {
-                    i = i+1;
-                    string smokeInput = "";
-                    while (i < commands.count()) {
-                        if (smokeInput != "") {
-                            smokeInput += " ";
-                        }
-                        smokeInput += commands[i];
-                        i++;
-                    }
-                    setSmokeMessage(smokeInput);
-                } else {
-                    printSmokeMessage();
-                }
-                return;
-            case "clearsmokemessage":
-                set_property("prusias_ploop_smokeMessage", "");
-                print("Campfire smoke message reset to the default: " + smokeMessage(1), "teal");
-                return;
             case "clearclanstashlist":
                 clearClanStashAcquireList();
                 return;
