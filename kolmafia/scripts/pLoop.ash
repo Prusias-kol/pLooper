@@ -800,20 +800,6 @@ string smokeMessage(int smokeNum) {
     return message;
 }
 
-void printSmokeMessage() {
-    string prefix = "Campfire smokes will say: ";
-    if (get_property("prusias_ploop_smokeMessage") == "") {
-        prefix = "No custom message set, so campfire smokes will say: ";
-    }
-    print(prefix + smokeMessage(1), "teal");
-    print_html("Set your own with <b>ploop smokemessage (your message)</b> or go back to the default with <b>ploop clearsmokemessage</b>. Use <b>%n</b> anywhere you want the smoke number. 100 character max, and an <b>&amp;</b> becomes <b>and</b>.");
-}
-
-void setSmokeMessage(string message) {
-    set_property("prusias_ploop_smokeMessage", message);
-    print("Campfire smokes will now say: " + smokeMessage(1), "teal");
-}
-
 void ascendToValhalla() {
     pre_ascend_pulls();
 
