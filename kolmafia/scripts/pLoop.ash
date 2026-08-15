@@ -36,6 +36,7 @@ prusias_ploop_garboWorkshed - string
 prusias_ploop_workshedItemAfterLoopScript - string
 prusias_ploop_garboPostAscendWorkshed - string
 prusias_ploop_ascendScript - string
+prusias_ploop_loopScriptClan - string - clan to use only while the configured loop script runs. if empty, stays in the home clan
 prusias_ploop_nightcapOutfit - string
 prusias_ploop_preAscendGarden - string of packet of seeds name. if empty, skips
 prusias_ploop_ascensionType - int
@@ -205,6 +206,7 @@ void ploopHelper() {
     print_html("<b>init</b> - Generic init that prompts for pathId. Use this for paths without a dedicated init.");
     print_html("<b>csinit</b> - Initializes pLooper for Community Service (pathId 25).");
     print_html("<b>smolinit</b> - Initializes pLooper for A Shrunken Adventurer am I (pathId 49).");
+    print_html("<b>utsinit</b> - Initializes pLooper for 11037 Leagues Under The Sea (pathId 55).");
     print_html("<b>roboinit</b> - Initializes pLooper for You, Robot (pathId 41).");
     print("Saves Feature - Lets you quickly hotswap between run types", "teal");
     print_html("<b>listSaves</b> - Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves");
@@ -240,6 +242,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
     print_html("<b>prusias_ploop_smokeMessage</b> - Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>.");
+    print_html("<b>prusias_ploop_loopScriptClan</b> - Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan.");
     print("Disables", "teal");
     print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked.");
     print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
@@ -259,6 +262,7 @@ string astralPetPrompt = "Provide the exact name of the astral pet you want to t
 string astralDeliPrompt = "Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks";
 string genderPrompt = "Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female.";
 string ascendScriptPrompt = "What script should be run after exiting valhalla to finish your run (ex: instantsccs, loopsmol, etc.)? Type just as you would type in the CLI to run the script.";
+string loopScriptClanPrompt = "What clan should pLooper join while running your loop script? Leave blank to stay in your home clan. Will return to home clan after loop script is done.";
 string workshedPrompt = "On leg 1 (after RO at the start of the day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
 string leg2WorkshedPrompt = "On leg 2 (after ascending and running your ascension script), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
 string nightcapOutfitPrompt = "Provide the exact name of the nightcap outfit you will be using.";
@@ -308,6 +312,16 @@ void smolInit() {
     promptPostAscensionProperties();
     set_property("prusias_ploop_pathId", "49");
     set_property("prusias_ploop_ascensionType", "2");
+}
+
+void utsInit() {
+    promptBasicInitProperties();
+    set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
+    promptAscensionProperties(moonPrompt);
+    set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
+    set_property("prusias_ploop_loopScriptClan", user_prompt(loopScriptClanPrompt));
+    promptPostAscensionProperties();
+    set_property("prusias_ploop_pathId", "55");
 }
 
 void robotInit() {
@@ -1376,7 +1390,24 @@ void runLoopScriptPhase(boolean halloween) {
         if (!halloween && get_property("prusias_ploop_pathId") == "49") {
             print(florist_available());
         }
-        cli_execute(get_property("prusias_ploop_ascendScript"));
+        string loopScriptClan = get_property("prusias_ploop_loopScriptClan");
+        string homeClan = get_property("prusias_ploop_homeClan");
+        boolean useLoopScriptClan = loopScriptClan != "";
+
+        // Keep a path-specific clan dependency scoped to the loop script, including when
+        // that script aborts, so post-run preparation and garbo resume in the home clan.
+        if (useLoopScriptClan) {
+            cli_execute("/whitelist " + loopScriptClan);
+        }
+        string errorMessage = catch {
+            cli_execute(get_property("prusias_ploop_ascendScript"));
+        };
+        if (useLoopScriptClan) {
+            cli_execute("/whitelist " + homeClan);
+        }
+        if (errorMessage != "") {
+            abort(errorMessage);
+        }
     }
 }
 
@@ -1642,6 +1673,9 @@ void main(string input) {
                 return;
             case "smolinit":
                 smolInit();
+                return;
+            case "utsinit":
+                utsInit();
                 return;
             case "roboinit":
                 robotInit();
