@@ -320,6 +320,7 @@ void utsInit() {
     promptAscensionProperties(moonPrompt);
     set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
     set_property("prusias_ploop_loopScriptClan", user_prompt(loopScriptClanPrompt));
+    set_property("prusias_ploop_utsCodpieceCheck", user_confirm("Should pLooper fill The Eternity Codpiece with five unblemished pearls before ascending? Missing pearls may be bought according to the configured price ceiling.") ? "true" : "false");
     promptPostAscensionProperties();
     set_property("prusias_ploop_pathId", "55");
 }
