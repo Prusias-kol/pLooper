@@ -67,6 +67,7 @@ prusias_ploop_garboAdditionalArg = string
 prusias_ploop_breakfastAdditionalScript = string
 prusias_ploop_postDayScript = string
 prusias_ploop_alwaysSteelOrgan = boolean
+prusias_ploop_openKnobTreasury = boolean
 
 Smol specific
 prusias_ploop_smolNoSaladFork = boolean
@@ -215,6 +216,7 @@ void ploopHelper() {
     print_html("<b>load (name)</b> - Loads the state of pLooper from the file with the given name");
     print("Daily Commands", "teal");
     print_html("<b>fullday</b> - Fullday wrapper");
+    print_html("<b>knob</b> - Opens Cobb's Knob Treasury now: adventures in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and uses the council's map. Runs whether or not <b>prusias_ploop_openKnobTreasury</b> is set.");
     printPloopChunkHelp();
     print("Commonly Used Configs", "teal");
     print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additional items outside README are acquired before ascension.");
@@ -243,6 +245,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
     print_html("<b>prusias_ploop_postDayScript</b> - Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded.");
     print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
+    print_html("<b>prusias_ploop_openKnobTreasury</b> - Set to <b>true</b> to open Cobb's Knob Treasury after the loop script, by adventuring in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and using the council's map.");
     print_html("<b>prusias_ploop_smokeMessage</b> - Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>.");
     print_html("<b>prusias_ploop_loopScriptClan</b> - Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan.");
     print("Disables", "teal");
@@ -1198,6 +1201,83 @@ void acquireSteelOrganIfNeeded() {
     cli_execute("ploopgoals goal organ");
 }
 
+//can_adventure is already true while holding the key and the map, before the map is used
+boolean knobOpen() {
+    string quest = get_property("questL05Goblin");
+    return quest != "" && quest != "unstarted" && quest != "started";
+}
+
+//The Treasury opens with the Knob: the Outskirts' encryption key plus the council's map.
+//A new ascension resets the level 5 quest, so this runs once per loop.
+void openKnobTreasury() {
+    if (knobOpen()) {
+        print("The Knob Treasury is already open.", "teal");
+        return;
+    }
+
+    if (my_level() < 5) {
+        print("ERROR_PLOOP: Opening the Knob Treasury needs level 5 for the council's map, but you are level " + my_level() + ".", "red");
+        return;
+    }
+    if (get_property("questL05Goblin") == "unstarted") {
+        visit_url("council.php");
+    }
+    if (item_amount($item[Cobb's Knob map]) == 0) {
+        print("ERROR_PLOOP: No Cobb's Knob map, so the Knob Treasury was not opened.", "red");
+        return;
+    }
+
+    print("Opening the Knob Treasury", "teal");
+    item key = $item[Knob Goblin encryption key];
+    if (item_amount(key) == 0 && my_adventures() < 11) {
+        if (item_amount($item[astral six-pack]) > 0) {
+            cli_execute("use astral six-pack");
+        }
+        if (item_amount($item[astral pilsner]) > 0) {
+            cli_execute("cast ode to booze");
+            cli_execute("drink astral pilsner");
+        }
+    }
+
+    string[int] choices = {111: "3", 113: "2", 118: "1"};
+    string[int] savedChoices;
+    foreach choice, option in choices {
+        savedChoices[choice] = get_property("choiceAdventure" + choice);
+        set_property("choiceAdventure" + choice, option);
+    }
+    try {
+        //the key is a delayed noncombat, and free fights do not advance the delay.
+        //The macro replaces whatever combat script is active, which may only
+        //handle another script's monsters.
+        int tries = 0;
+        while (item_amount(key) == 0 && my_adventures() > 0 && tries < 25) {
+            tries += 1;
+            if (!adv1($location[The Outskirts of Cobb's Knob], -1, "attack; repeat;")) {
+                break;
+            }
+        }
+    } finally {
+        foreach choice, option in savedChoices {
+            set_property("choiceAdventure" + choice, option);
+        }
+    }
+
+    if (item_amount(key) == 0) {
+        print("ERROR_PLOOP: No Knob Goblin encryption key from The Outskirts of Cobb's Knob, so the Knob Treasury was not opened.", "red");
+        return;
+    }
+    use(1, $item[Cobb's Knob map]);
+    if (!knobOpen()) {
+        print("ERROR_PLOOP: Used Cobb's Knob map but the Knob Treasury is still closed.", "red");
+    }
+}
+
+void openKnobTreasuryIfNeeded() {
+    if (get_property("prusias_ploop_openKnobTreasury").to_boolean() && !knobOpen()) {
+        openKnobTreasury();
+    }
+}
+
 void tunePostRunMoonIfNeeded() {
     if (get_property('moonTuned').to_boolean() || get_property("prusias_ploop_postRunMoonTune") == "") {
         return;
@@ -1220,6 +1300,7 @@ void installPostLoopWorkshedIfNeeded() {
 
 void prepareForPostRun() {
     acquireSteelOrganIfNeeded();
+    openKnobTreasuryIfNeeded();
     tunePostRunMoonIfNeeded();
     returnClanStashItems();
     installPostLoopWorkshedIfNeeded();
@@ -1752,6 +1833,9 @@ void main(string input) {
                 return;
             case "listsaves":
                 listSaves();
+                return;
+            case "knob":
+                openKnobTreasury();
                 return;
             case "piraterealmenable":
                 user_confirm("Make sure you don't have breakfast on startup or any startup scripts that run breakfast! This option uses breakfast to unlock pirateRealm for cockroaches");
