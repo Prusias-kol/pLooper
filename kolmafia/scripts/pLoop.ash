@@ -65,6 +65,7 @@ prusias_ploop_smokeMessage = string - message for pre-ascension campfire smokes.
 prusias_ploop_nightcapMPA = int
 prusias_ploop_garboAdditionalArg = string
 prusias_ploop_breakfastAdditionalScript = string
+prusias_ploop_preAscendSoybeanFutures = boolean - spend Interesting Coins on soybean futures before ascending, since the coins do not survive the Astral Gash
 prusias_ploop_postDayScript = string
 prusias_ploop_alwaysSteelOrgan = boolean
 
@@ -241,6 +242,7 @@ void optional_help_info() {
     print_html("<b>prusias_ploop_nightcapMPA</b> - False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap.");
     print_html("<b>prusias_ploop_garboAdditionalArg</b> - Additional argument to pass to garbo.");
     print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
+    print_html("<b>prusias_ploop_preAscendSoybeanFutures</b> - Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs.");
     print_html("<b>prusias_ploop_postDayScript</b> - Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded.");
     print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
     print_html("<b>prusias_ploop_smokeMessage</b> - Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>.");
@@ -728,6 +730,48 @@ void utsCodpieceCheck() {
         print("Codpiece loaded: five unblemished pearls will carry into the run.", "blue");
 }
 
+//Interesting Coins are quest items, so the Astral Gash takes every one still in inventory.
+//Soybean futures are the sink: the food carries into the next run's storage. Spending the
+//whole balance costs nothing, because a new run hands back 4 coins on its own and they earn
+//interest at rollover, so leg 1 of a day is normally holding the 7 one purchase costs.
+void preAscendSoybeanFutures() {
+    if (!get_property("prusias_ploop_preAscendSoybeanFutures").to_boolean()) return;
+
+    coinmaster shop = $coinmaster[Spend your Interesting Coins];
+    item coin = $item[Interesting Coin];
+    item futures = $item[soybean futures];
+
+    int coins = item_amount(coin);
+    if (coins == 0) return;
+
+    if (!is_accessible(shop)) {
+        print(`Holding {coins} Interesting Coin(s) but the coin shop is shut: {inaccessible_reason(shop)}`, "red");
+        return;
+    }
+
+    //take the cost off the shop row rather than hardcoding 7, so a repricing cannot make us
+    //ask for more soybean futures than the coins in hand actually pay for
+    int cost = sell_price(shop, futures);
+    if (cost <= 0) {
+        print("ERROR_PLOOP: no Interesting Coin price for soybean futures, so none were bought.", "red");
+        return;
+    }
+
+    int toBuy = coins / cost;
+    if (toBuy == 0) {
+        print(`Holding {coins} Interesting Coin(s), short of the {cost} one soybean futures costs, so they are lost at the Gash.`, "red");
+        return;
+    }
+
+    int before = item_amount(futures);
+    buy(shop, toBuy, futures);
+    int bought = item_amount(futures) - before;
+    if (bought < toBuy)
+        print(`ERROR_PLOOP: bought {bought} of {toBuy} soybean futures; {item_amount(coin)} Interesting Coin(s) are still on hand and will be lost at the Gash.`, "red");
+    else
+        print(`Bought {bought} soybean futures for {bought * cost} Interesting Coins.`, "blue");
+}
+
 void pre_ascend_pulls() {
     //Acquire Potential CS Pulls
     if (get_property("prusias_ploop_ascensionType") == "" || get_property("prusias_ploop_ascensionType").to_int() < 3) {
@@ -771,6 +815,9 @@ void pre_ascend_pulls() {
         }
         
     }
+
+    //Interesting Coins do not survive the Gash, so turn them into food that does
+    preAscendSoybeanFutures();
 
     //pearls for 11037 Leagues Under The Sea, smuggled in via The Eternity Codpiece
     utsCodpieceCheck();
