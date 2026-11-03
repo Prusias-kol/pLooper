@@ -76,7 +76,7 @@ prusias_ploop_smolNoFrostyMug = boolean
 11037 Leagues Under The Sea specific
 prusias_ploop_utsCodpieceCheck = boolean - fill The Eternity Codpiece with five unblemished pearls before ascending into path 55, buying any that are missing at up to valueOfAdventure * 10 * 2 meat each
 
-Script state tracking
+Script state tracking - must be skipped by save/load
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
 prusias_ploop_clanStashTakenFrom - return to right clan
@@ -97,7 +97,8 @@ boolean [string] skip_props = {
 boolean[string] steel_organ_paths = {
     "49": true, //smol
     "41": true, //you, robot
-    "51": true //ih8u
+    "51": true, //ih8u
+    "55": true //11037 Leagues Under The Sea
 };
 
 record PloopChunk { string name; string description; };
@@ -115,10 +116,82 @@ PloopChunk[int] PLOOP_CHUNKS = {
 
 string filePrefix = "data/ploop/saves/";
 
+string ploopHelpSectionHtml(string title) {
+    return "<br><font color=teal><b>" + entity_encode(title) + "</b></font>";
+}
+
+void printPloopHelpSection(string title) {
+    print_html(ploopHelpSectionHtml(title));
+}
+
+string ploopHelpValue(string propertyName) {
+    string value = get_property(propertyName);
+    if (value == "") return "<font color=teal><b>(empty)</b></font>";
+    return "<b>" + entity_encode(value) + "</b>";
+}
+
+string ploopHelpEntryHtml(string label, string description) {
+    string detail = description == "" ? "" : "<div style=\"margin-left: 16px; margin-top: 0; margin-bottom: 0;\">" + description + "</div>";
+    return "<b>" + entity_encode(label) + "</b>" + detail;
+}
+
+void printPloopHelpEntry(string label, string description) {
+    print_html(ploopHelpEntryHtml(label, description));
+}
+
+string ploopHelpOptionHtml(string propertyName, string description) {
+    string preference = "<code>" + entity_encode(propertyName) + "</code> = " + ploopHelpValue(propertyName);
+    string detail = description == "" ? "" : "<div style=\"margin-left: 16px; margin-top: 0; margin-bottom: 0;\">" + description + "</div>";
+    return preference + detail;
+}
+
+void printPloopHelpOption(string propertyName, string description) {
+    print_html(ploopHelpOptionHtml(propertyName, description));
+}
+
 void listSaves() {
-    print("Current Saves: ", "teal");
+    printPloopHelpSection("Current saves");
+    if (get_property("prusias_ploop_validSaves") == "") {
+        print_html("<font color=teal><b>(empty)</b></font>");
+        return;
+    }
     foreach x, it in get_property("prusias_ploop_validSaves").split_string('(?<!\\\\)(, |,)') {
-        print("- " + it);
+        printPloopHelpEntry(it, "");
+    }
+}
+
+void listInitArgs() {
+    string [int] properties = {
+        "prusias_ploop_pathId",
+        "prusias_ploop_ascensionType",
+        "prusias_ploop_moonId",
+        "prusias_ploop_classId",
+        "prusias_ploop_ascendGender",
+        "prusias_ploop_astralPet",
+        "prusias_ploop_astralDeli",
+        "prusias_ploop_ascendScript",
+        "prusias_ploop_homeClan",
+        "prusias_ploop_loopScriptClan",
+        "prusias_ploop_garboWorkshed",
+        "prusias_ploop_workshedItemAfterLoopScript",
+        "prusias_ploop_garboPostAscendWorkshed",
+        "prusias_ploop_garboAdditionalArg",
+        "prusias_ploop_preAscendGarden",
+        "prusias_ploop_utsCodpieceCheck",
+        "prusias_ploop_nightcapOutfit",
+        "uts_postLoopFarmPearls",
+        "uts_postLoopPrepCodpiece",
+        "uts_postLoopRunOutEagleBanish",
+        "uts_usePilsners"
+    };
+    print_html("<b>Current init preferences</b>");
+    foreach index, propertyName in properties {
+        if (propertyName == "prusias_ploop_pathId") printPloopHelpSection("Ascension");
+        if (propertyName == "prusias_ploop_homeClan") printPloopHelpSection("Clans");
+        if (propertyName == "prusias_ploop_garboWorkshed") printPloopHelpSection("Garbo and worksheds");
+        if (propertyName == "prusias_ploop_preAscendGarden") printPloopHelpSection("Pre-ascension and nightcap");
+        if (propertyName == "uts_postLoopFarmPearls") printPloopHelpSection("UnderTheSea");
+        printPloopHelpOption(propertyName, "");
     }
 }
 
@@ -172,13 +245,19 @@ void loadAllProperties(string fileName) {
     print("Ploop save state successfully loaded.", "teal");
 }
 
-void printPloopChunkHelp() {
-    print("Runnable Chunks", "teal");
-    print_html("<b>run next</b> - Runs the next chunk tracked for today. <b>prusias_ploop_runNextCompletedChunk</b> stores exactly one of the chunk names listed below.");
-    print("---");
+string ploopChunkHelpHtml() {
+    buffer output;
+    output.append(ploopHelpSectionHtml("Run individual phases") + "<br>");
+    output.append("Run the loop one phase at a time so you can pause for item farming or other manual tasks between phases. Use <b>ploop run next</b> to advance in order, or run a specific phase by name.<br>");
+    output.append(ploopHelpEntryHtml("ploop run next", "Runs the next chunk tracked for today. <b>prusias_ploop_runNextCompletedChunk</b> stores exactly one of the chunk names listed below."));
     foreach index, chunk in PLOOP_CHUNKS {
-        print_html("<b>run " + chunk.name + "</b> - " + chunk.description);
+        output.append(ploopHelpEntryHtml("ploop run " + chunk.name, chunk.description));
     }
+    return output.to_string();
+}
+
+void printPloopChunkHelp() {
+    print_html(ploopChunkHelpHtml());
 }
 
 boolean isPloopChunk(string name) {
@@ -201,61 +280,71 @@ void resetRunNextTrackerIfNeeded() {
 }
 
 void ploopHelper() {
-    print_html("<font color=eda800><b>Welcome to pLooper!</b></font>");
-    print("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations.");
-    print("To use the script, please run ploop init before you run ploop fullday");
-    print("Setup Commands - At least one of the inits must be run","teal");
-    print_html("<b>init</b> - Generic init that prompts for pathId. Use this for paths without a dedicated init.");
-    print_html("<b>csinit</b> - Initializes pLooper for Community Service (pathId 25).");
-    print_html("<b>smolinit</b> - Initializes pLooper for A Shrunken Adventurer am I (pathId 49).");
-    print_html("<b>utsinit</b> - Initializes pLooper for 11037 Leagues Under The Sea (pathId 55).");
-    print_html("<b>roboinit</b> - Initializes pLooper for You, Robot (pathId 41).");
-    print("Saves Feature - Lets you quickly hotswap between run types", "teal");
-    print_html("<b>listSaves</b> - Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves");
-    print_html("<b>save (name)</b> - Saves current state of pLooper to a file with the given name");
-    print_html("<b>load (name)</b> - Loads the state of pLooper from the file with the given name");
-    print("Daily Commands", "teal");
-    print_html("<b>fullday</b> - Fullday wrapper");
-    printPloopChunkHelp();
-    print("Commonly Used Configs", "teal");
-    print_html("<b>clearacquirelist</b> - Empties Acquisition List so no additional items outside README are acquired before ascension.");
-    print_html("<b>addacquirelist (item name)</b> - Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension.");
-    print_html("<b>clearclanstashlist</b> - Empties pre-ascend clan stash acquisition list.");
-    print_html("<b>addclanstashlist (item name)</b> - Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped.");
-    print_html("<b>pirateRealmEnable</b> - Enables unlocking Trash Island and garbo targetting cockroaches. <b>Requires PirateRealm Membership Packet with anemometer unlocked!</b>");
-    print_html("<b>pirateRealmDisable</b> - Disables unlocking Trash Island and garbo targetting cockroaches.");
-    print("Additional Configs", "teal");
-    print_html("<b>options</b> - See optional preferences you can set and configure");
+    buffer output;
+    output.append("<b>pLooper</b>" + "<br>");
+    output.append("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations." + "<br>");
+    output.append("To use the script, please run <b>ploop init</b> before you run <b>ploop fullday</b>." + "<br>");
+    output.append(ploopHelpSectionHtml("Setup - run one init first") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop init", "Generic init that prompts for pathId. Use this for paths without a dedicated init."));
+    output.append(ploopHelpEntryHtml("ploop csinit", "Initializes pLooper for Community Service (pathId 25)."));
+    output.append(ploopHelpEntryHtml("ploop smolinit", "Initializes pLooper for A Shrunken Adventurer am I (pathId 49)."));
+    output.append(ploopHelpEntryHtml("ploop utsinit", "Initializes pLooper for 11037 Leagues Under The Sea (pathId 55). Sets the ascension script to <b>underthesea</b>. Recommend running underthesea sim first"));
+    output.append(ploopHelpEntryHtml("ploop roboinit", "Initializes pLooper for You, Robot (pathId 41)."));
+    output.append(ploopHelpEntryHtml("ploop listInitArgs", "Lists current values of every preference that any init command can set."));
+    output.append(ploopHelpSectionHtml("Run a full day") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop fullday", "Fullday wrapper"));
+    output.append(ploopHelpSectionHtml("Run individual phases") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop run next", "Runs the next phase tracked for today."));
+    output.append(ploopHelpEntryHtml("ploop run help", "Explains phased runs and lists all phase commands."));
+    output.append(ploopHelpSectionHtml("Pre-ascension acquisition lists") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop clearacquirelist", "Empties Acquisition List so no additional items outside README are acquired before ascension."));
+    output.append(ploopHelpEntryHtml("ploop addacquirelist (item name)", "Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension."));
+    output.append(ploopHelpEntryHtml("ploop clearclanstashlist", "Empties pre-ascend clan stash acquisition list."));
+    output.append(ploopHelpEntryHtml("ploop addclanstashlist (item name)", "Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped."));
+    output.append(ploopHelpSectionHtml("Save and load configurations") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop listSaves", "Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves"));
+    output.append(ploopHelpEntryHtml("ploop save (name)", "Saves current state of pLooper to a file with the given name"));
+    output.append(ploopHelpEntryHtml("ploop load (name)", "Loads the state of pLooper from the file with the given name"));
+    output.append(ploopHelpSectionHtml("Optional preferences") + "<br>");
+    output.append(ploopHelpEntryHtml("ploop options", "See optional preferences you can set and configure"));
+    print_html(output.to_string());
     cli_execute("pUpdates check ploop");
 }
 
 void optional_help_info() {
-    print("Optional Preferences", "teal");
-    print_html("<b>prusias_ploop_alwaysPvP</b> - Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO.");
-    print_html("<b>prusias_ploop_leg1PvP</b> - Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo.");
-    print_html("<b>prusias_ploop_neverPvpOverride</b> - Set to true to disable all pvp related actions. Useful if you don't want to break stone or get pvp fights at all.");
-    print_html("<b>prusias_ploop_detectHalloween</b> - Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself");
-    print_html("<b>prusias_ploop_tryDmtDupe</b> - Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work.");
-    print_html("<b>prusias_ploop_dmtDupeItemId</b> - Set to <b>item id</b> you would like to dupe");
-    print_html("<b>prusias_ploop_useAdvForPvpAtBoxingDaycare</b> - Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare.");
-    print_html("<b>prusias_ploop_postRunMoonTune</b> - Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign.");
-    print_html("<b>prusias_ploop_nightcapMPA</b> - False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap.");
-    print_html("<b>prusias_ploop_garboAdditionalArg</b> - Additional argument to pass to garbo.");
-    print_html("<b>prusias_ploop_breakfastAdditionalScript</b> - Will cli_execute whatever this property is set to after breakfast.");
-    print_html("<b>prusias_ploop_preAscendSoybeanFutures</b> - Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs.");
-    print_html("<b>prusias_ploop_postDayScript</b> - Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded.");
-    print_html("<b>prusias_ploop_alwaysSteelOrgan</b> - Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about.");
-    print_html("<b>prusias_ploop_smokeMessage</b> - Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>.");
-    print_html("<b>prusias_ploop_loopScriptClan</b> - Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan.");
-    print("Disables", "teal");
-    print_html("<b>prusias_ploop_optOutSmoking</b> - Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked.");
-    print_html("<b>prusias_ploop_disableOffhandRemarkable</b> - Set to true to disable casting offhand remarkable on rollover");
-    print("Smol Specific", "teal");
-    print_html("<b>prusias_ploop_smolNoSaladFork</b> - Set to true to disable preparing a salad fork before ascension for smol");
-    print_html("<b>prusias_ploop_smolNoFrostyMug</b> - Set to true to disable preparing a frosty mug before ascension for smol");
-    print("11037 Leagues Under The Sea Specific", "teal");
-    print_html("<b>prusias_ploop_utsCodpieceCheck</b> - Set to true to make sure The Eternity Codpiece holds five unblemished pearls before ascending into path 55. Gems survive the Astral Gash and the path blocks pulls, so this is how the pearls the Nautical Seaceress needs get into the run. Missing pearls are bought from the mall at up to <b>valueOfAdventure * 10 * 2</b> meat each, and this runs before every path 55 ascension, so budget for up to five of them each time.");
-
+    // Print one HTML block: Mafia adds a line break after each print_html call,
+    // which otherwise creates an empty line after each indented description.
+    buffer output;
+    output.append("<b>pLooper options</b><br>Each preference shows its current value. (empty) means no value is set.<br>");
+    output.append(ploopHelpSectionHtml("Garbo and loop script") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_garboAdditionalArg", "Additional arguments to pass to garbo, separated by spaces. Init commands replace this setting with the selected options: cockroach targeting for all inits, plus optional cowo farming for utsinit."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_loopScriptClan", "Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan. <b>utsinit</b> prompts for this setting; <b>Bonus Adventures From Hell</b> is recommended for <b>underthesea</b>."));
+    output.append(ploopHelpSectionHtml("Custom scripts") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "Will cli_execute whatever this property is set to after breakfast."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_postDayScript", "Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded."));
+    output.append(ploopHelpSectionHtml("Ascension and nightcap") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_preAscendSoybeanFutures", "Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysSteelOrgan", "Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_postRunMoonTune", "Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_nightcapMPA", "False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_smokeMessage", "Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_optOutSmoking", "Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_disableOffhandRemarkable", "Set to true to disable casting offhand remarkable on rollover"));
+    output.append(ploopHelpSectionHtml("PvP") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysPvP", "Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_leg1PvP", "Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_neverPvpOverride", "Set to true to disable all pvp related actions. Useful if you don't want to break stone or get pvp fights at all."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_useAdvForPvpAtBoxingDaycare", "Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare."));
+    output.append(ploopHelpSectionHtml("Other automation") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself"));
+    output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "Set to <b>item id</b> you would like to dupe"));
+    output.append(ploopHelpSectionHtml("A Shrunken Adventurer am I") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoSaladFork", "Set to true to disable preparing a salad fork before ascension for smol"));
+    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoFrostyMug", "Set to true to disable preparing a frosty mug before ascension for smol"));
+    output.append(ploopHelpSectionHtml("11037 Leagues Under The Sea") + "<br>");
+    output.append(ploopHelpOptionHtml("prusias_ploop_utsCodpieceCheck", "Set to true to make sure The Eternity Codpiece holds five unblemished pearls before ascending into path 55. Gems survive the Astral Gash and the path blocks pulls, so this is how the pearls the Nautical Seaceress needs get into the run. Missing pearls are bought from the mall at up to <b>valueOfAdventure * 10 * 2</b> meat each, and this runs before every path 55 ascension, so budget for up to five of them each time."));
+    print_html(output.to_string());
 }
 
 string homeClanPrompt = "What is your home clan? The script will ensure you are in this clan before running.";
@@ -266,7 +355,7 @@ string astralPetPrompt = "Provide the exact name of the astral pet you want to t
 string astralDeliPrompt = "Provide the exact name of the astral deli item you want to take. astral hot dog dinner;astral six-pack;carton of astral energy drinks";
 string genderPrompt = "Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female.";
 string ascendScriptPrompt = "What script should be run after exiting valhalla to finish your run (ex: instantsccs, loopsmol, etc.)? Type just as you would type in the CLI to run the script.";
-string loopScriptClanPrompt = "What clan should pLooper join while running your loop script? Leave blank to stay in your home clan. Will return to home clan after loop script is done.";
+string loopScriptClanPrompt = "What clan should pLooper join while running your loop script? Bonus Adventures From Hell is recommended for underthesea. Sets prusias_ploop_loopScriptClan. Leave blank to stay in your home clan. Will return to home clan after loop script is done.";
 string workshedPrompt = "On leg 1 (after RO at the start of the day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
 string leg2WorkshedPrompt = "On leg 2 (after ascending and running your ascension script), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
 string nightcapOutfitPrompt = "Provide the exact name of the nightcap outfit you will be using.";
@@ -286,9 +375,23 @@ void promptAscensionProperties(string moonQuestion) {
     set_property("prusias_ploop_ascendGender", user_prompt(genderPrompt));
 }
 
-void promptPostAscensionProperties() {
+void promptGarboInitProperties(boolean offerCowo) {
+    print("This init replaces prusias_ploop_garboAdditionalArg with your selections below. Existing additional arguments will be cleared; declining all options leaves it empty.", "teal");
+    string additionalArgs = "";
+    if (offerCowo && user_confirm("Use Garbo's cowo farming method (farmingMethod cowo) to farm a higher base Meat Sea zone? If you are low shiny or don't know what cowo is, choose No to skip.")) {
+        additionalArgs = "farmingMethod cowo";
+    }
+    if (user_confirm("Use cockroach as Garbo's copy target (target=\"cockroach\")? You need to own PirateRealm and have lots of copying IotMs. If you don't understand this option, choose No to skip.")) {
+        if (additionalArgs != "") additionalArgs += " ";
+        additionalArgs += `target="cockroach"`;
+    }
+    set_property("prusias_ploop_garboAdditionalArg", additionalArgs);
+}
+
+void promptPostAscensionProperties(boolean offerCowo) {
     set_property("prusias_ploop_garboPostAscendWorkshed", user_prompt(leg2WorkshedPrompt));
     set_property("prusias_ploop_nightcapOutfit", user_prompt(nightcapOutfitPrompt));
+    promptGarboInitProperties(offerCowo);
 }
 
 void init() {
@@ -297,7 +400,7 @@ void init() {
     set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
     promptAscensionProperties(moonPrompt);
     set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
-    promptPostAscensionProperties();
+    promptPostAscensionProperties(false);
 }
 
 void csInit() {
@@ -305,7 +408,7 @@ void csInit() {
     set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
     promptAscensionProperties(moonPrompt);
     set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
-    promptPostAscensionProperties();
+    promptPostAscensionProperties(false);
     set_property("prusias_ploop_pathId", "25");
 }
 
@@ -313,7 +416,7 @@ void smolInit() {
     promptBasicInitProperties();
     promptAscensionProperties(moonPrompt);
     set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
-    promptPostAscensionProperties();
+    promptPostAscensionProperties(false);
     set_property("prusias_ploop_pathId", "49");
     set_property("prusias_ploop_ascensionType", "2");
 }
@@ -322,10 +425,14 @@ void utsInit() {
     promptBasicInitProperties();
     set_property("prusias_ploop_ascensionType", user_prompt("What type of ascension are you doing? 1-Casual, 2-Normal (or Softcore), 3-Hardcore."));
     promptAscensionProperties(moonPrompt);
-    set_property("prusias_ploop_ascendScript", user_prompt(ascendScriptPrompt));
+    set_property("prusias_ploop_ascendScript", "underthesea");
+    set_property("uts_postLoopFarmPearls", "true");
+    set_property("uts_postLoopPrepCodpiece", "true");
+    set_property("uts_postLoopRunOutEagleBanish", "true");
+    set_property("uts_usePilsners", "true");
     set_property("prusias_ploop_loopScriptClan", user_prompt(loopScriptClanPrompt));
-    set_property("prusias_ploop_utsCodpieceCheck", user_confirm("Should pLooper fill The Eternity Codpiece with five unblemished pearls before ascending? Missing pearls may be bought according to the configured price ceiling.") ? "true" : "false");
-    promptPostAscensionProperties();
+    set_property("prusias_ploop_utsCodpieceCheck", user_confirm("Should pLooper guarantee filling The Eternity Codpiece with five unblemished pearls before ascending? Missing pearls may be bought according to the configured price ceiling.") ? "true" : "false");
+    promptPostAscensionProperties(true);
     set_property("prusias_ploop_pathId", "55");
 }
 
@@ -334,7 +441,7 @@ void robotInit() {
     promptAscensionProperties("Provide the integer id of the moon you want to ascend into (LoopRobot wants Vole). 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat");
     set_property("prusias_ploop_ascendScript", "looprobot");
     set_property("prusias_ploop_workshedItemAfterLoopScript", user_prompt("Looprobot doesn't use a workshed. What workshed would you like to use after looprobot finishes? You will be prompted for a 2nd workshed for garbo to swap to after this."));
-    promptPostAscensionProperties();
+    promptPostAscensionProperties(false);
     set_property("prusias_ploop_pathId", "41");
     set_property("prusias_ploop_ascensionType", "2");
 }
@@ -994,6 +1101,60 @@ boolean yachtzeeAccess() {
     return false;
 }
 
+boolean garboDigitizeMismatch() {
+    string macroError = get_property("lastMacroError").to_lower_case();
+    return macroError.contains_text("expected a digitized ")
+        && macroError.contains_text("but encountered something else");
+}
+
+void runGarboWithDigitizeRecovery(string command) {
+    int maxRecoveries = 2;
+    int recoveries = 0;
+
+    while (true) {
+        // Do not mistake an error from an earlier Garbo invocation for this failure.
+        set_property("lastMacroError", "");
+        boolean succeeded = false;
+        string errorMessage = catch {
+            succeeded = cli_execute(command);
+        };
+        boolean digitizeMismatch = garboDigitizeMismatch();
+        if (succeeded && errorMessage == "" && !digitizeMismatch) return;
+
+        if (!digitizeMismatch) {
+            abort("ERROR_PLOOP: Garbo failed: " + (errorMessage != "" ? errorMessage : command));
+        }
+        if (recoveries >= maxRecoveries) {
+            abort("ERROR_PLOOP: Garbo Digitize mismatch persisted after " + maxRecoveries + " recovery attempts.");
+        }
+        if (handling_choice()) {
+            abort("ERROR_PLOOP: Garbo Digitize recovery stopped because a choice is open.");
+        }
+
+        recoveries = recoveries + 1;
+        print("Recovering Garbo Digitize mismatch (" + recoveries + "/" + maxRecoveries + ").", "orange");
+        // Finish only the interrupted fight; do not launch another adventure.
+        string recoveryError = catch {
+            if (current_round() > 0) run_combat("attack; repeat");
+        };
+        if (recoveryError != "") {
+            abort("ERROR_PLOOP: Garbo recovery combat failed: " + recoveryError);
+        }
+        if (current_round() > 0 || in_multi_fight() || choice_follows_fight() || handling_choice()) {
+            abort("ERROR_PLOOP: Garbo recovery left combat or a choice unfinished. Resolve it before rerunning pLoop.");
+        }
+
+        boolean refreshed = false;
+        string refreshError = catch {
+            refreshed = cli_execute("refresh all");
+        };
+        if (!refreshed || refreshError != "") {
+            abort("ERROR_PLOOP: Could not refresh after Garbo Digitize recovery: " + refreshError);
+        }
+        print("Retrying Garbo: " + command, "orange");
+    }
+}
+
 void garboUsage(string x) {
 	print("trying to run garbo","teal");
     if (have_familiar($familiar[Patriotic Eagle])) {
@@ -1025,7 +1186,7 @@ void garboUsage(string x) {
     if (get_property("prusias_ploop_garboAdditionalArg") != "")
         garboString += " " + get_property("prusias_ploop_garboAdditionalArg");
     print("Running garbo with " + garboString);
-    cli_execute(garboString);
+    runGarboWithDigitizeRecovery(garboString);
 }
 
 void postRunNoGarbo() {
@@ -1694,6 +1855,16 @@ void addClanStashAcquireItem(string itemToAdd) {
 }
 
 void main(string input) {
+    // Keep reports read-only, before the usual Halloween and PvP setup.
+    string reportInput = replace_all(create_matcher("^\\s+|\\s+$", input), "").to_lower_case();
+    if (reportInput == "listinitargs") {
+        listInitArgs();
+        return;
+    }
+    if (create_matcher("^run\\s+help$", reportInput).find()) {
+        printPloopChunkHelp();
+        return;
+    }
     restoreHalloweenMPA();
 
     //break hippy stone if always pvp
@@ -1799,14 +1970,6 @@ void main(string input) {
                 return;
             case "listsaves":
                 listSaves();
-                return;
-            case "piraterealmenable":
-                user_confirm("Make sure you don't have breakfast on startup or any startup scripts that run breakfast! This option uses breakfast to unlock pirateRealm for cockroaches");
-                set_property("prusias_ploop_garboAdditionalArg", `target="cockroach"`);
-                return;
-            case "piraterealmdisable":
-                set_property("prusias_ploop_garboAdditionalArg", ``);
-                set_property("prusias_ploop_breakfastAdditionalScript", "");
                 return;
             case "options":
             case "option":
