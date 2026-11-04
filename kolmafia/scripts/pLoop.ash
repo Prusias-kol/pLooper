@@ -1178,7 +1178,8 @@ void garboUsage(string x) {
         cli_execute("use Glenn's golden dice");
     if (!get_property("_lodestoneUsed").to_boolean() && available_amount($item[lodestone]) > 0)
         cli_execute("use lodestone");
-    string garboString = "garbo candydish";
+    // Let users opt in to candy dishes with the garbo_candydish preference.
+    string garboString = "garbo";
     if (yachtzeeAccess())
         garboString += " yachtzeechain";
     if (x != "")
