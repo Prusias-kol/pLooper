@@ -1,4 +1,4 @@
--1	12
+-1	15
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
@@ -8,7 +8,10 @@
 6	MAJOR PATH SUPPORT: Supports You,Robot looping with Kasekopf's script 
 7	New optional pref (prusias_ploop_nightcapMPA) to set nightcap MPA for those who had an MPA so high, CONSUME was overcapping them. 
 8	Two new additional optional preferences listed in ploop help. Lets you add a personal script to your breakfast and modify garbo arguments whenever garbo is called. 
-9	New command to access PirateRealm and run garbo targetting cockroaches. Thanks Tapion! Requires PirateRealm Membership Packet.
+9	Ploop init now lets you choose to target copies to cockroaches. Requires PirateRealm Membership Packet.
 10	Separated Ploop's optional configurable preferences to a new command.
 11	Pre-run pulls and sailing (for optional cockroach targeting) has been made much more robust. 
 12	MAJOR UPDATE: You can now set and load save states for ploop. This means you can init on one path, save it, and swap back to your setup at any time! Run ploop help to start using this feature. 
+13	Digitize recovery: Automatically finishes interrupted combats and retries garbo up to twice when a Digitize target mismatch occurs.
+14	Help refresh: Cleaner formatting, grouped options with current values, and new listInitArgs and run help commands.
+15	NEW PATH SUPPORT: UnderTheSea looping! Run ploop utsinit to configure underthesea, pearl preparation, optional cowo farming, and automatic steel organ acquisition.

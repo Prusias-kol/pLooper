@@ -12808,6 +12808,20 @@
   var riderSlots = (/* unused pure expression or super */ null && (["buddy-bjorn", "crown-of-thrones"]));
   
   var weaponHands = i => i ? (0,external_kolmafia_namespaceObject.weaponHands)(i) : 0;
+
+  function clearBlockingTwoHandedWeapon(outfit) {
+    var weaponSlot = external_kolmafia_namespaceObject.toSlot("weapon");
+    var offhandSlot = external_kolmafia_namespaceObject.toSlot("off-hand");
+    var offhand = outfit.equips.get(offhandSlot);
+    // Explicit weapons are dressed first by _dress. An unspecified weapon must
+    // be cleared here so a fixed off-hand can equip before the maximizer runs.
+    if (offhand && offhand !== template_string_$item.none
+        && !outfit.equips.has(weaponSlot)
+        && weaponHands(external_kolmafia_namespaceObject.equippedItem(weaponSlot)) > 1
+        && !external_kolmafia_namespaceObject.equip(weaponSlot, template_string_$item.none)) {
+      throw new Error("Could not remove the two-handed weapon before dressing the off-hand.");
+    }
+  }
   
   var outfit_modeableCommands = ["backupcamera", "umbrella", "snowsuit", "edpiece", "retrocape", "parka"];
   var Outfit = /*#__PURE__*/function () {
@@ -13325,6 +13339,7 @@
     }, {
       key: "_dress",
       value: function _dress(refreshed) {
+        clearBlockingTwoHandedWeapon(this);
         if (this.familiar) (0,external_kolmafia_namespaceObject.useFamiliar)(this.familiar);
         var targetEquipment = Array.from(this.equips.values());
         var usedSlots = new Set(); // First, we equip non-accessory equipment.
