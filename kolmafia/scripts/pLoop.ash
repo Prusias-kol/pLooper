@@ -68,6 +68,8 @@ prusias_ploop_runBigPieAsdonPrefuel = boolean - opt in to post-run Asdon pie pre
 prusias_ploop_breakfastAdditionalScript = string
 prusias_ploop_preAscendSoybeanFutures = boolean - spend Interesting Coins on soybean futures before ascending, since the coins do not survive the Astral Gash
 prusias_ploop_postDayScript = string
+prusias_ploop_buyRaffleTickets = boolean - buy raffle tickets at the end of the day
+prusias_ploop_raffleTicketCount = int - how many raffle tickets to have bought by the end of the day
 prusias_ploop_alwaysSteelOrgan = boolean
 
 Smol specific
@@ -342,6 +344,8 @@ void optional_help_info() {
     output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself"));
     output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work."));
     output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "Set to <b>item id</b> you would like to dupe"));
+    output.append(ploopHelpOptionHtml("prusias_ploop_buyRaffleTickets", "Set to <b>true</b> to buy raffle tickets at the end of the day, up to <b>prusias_ploop_raffleTicketCount</b>. Tickets already bought today count towards it. Tickets cost 10,000 meat each."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "How many raffle tickets to have bought by the end of the day."));
     output.append(ploopHelpSectionHtml("A Shrunken Adventurer am I") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_smolNoSaladFork", "Set to true to disable preparing a salad fork before ascension for smol"));
     output.append(ploopHelpOptionHtml("prusias_ploop_smolNoFrostyMug", "Set to true to disable preparing a frosty mug before ascension for smol"));
@@ -1778,6 +1782,34 @@ void runPostDayScript() {
     }
 }
 
+//Tickets vanish at rollover wherever they are, so any still held were bought today.
+//Takes the higher of the raffle page's count and the tickets held.
+int raffleTicketsBoughtToday() {
+    item ticket = $item[raffle ticket];
+    int held = item_amount(ticket) + closet_amount(ticket) + storage_amount(ticket);
+    matcher purchased = create_matcher("You have purchased ([\\d,]+) ticket", visit_url("raffle.php"));
+    int listed = purchased.find() ? purchased.group(1).to_int() : 0;
+    return max(held, listed);
+}
+
+void buyRaffleTicketsIfWanted() {
+    int wanted = get_property("prusias_ploop_raffleTicketCount").to_int();
+    if (!get_property("prusias_ploop_buyRaffleTickets").to_boolean() || wanted <= 0
+            || !get_property("kingLiberated").to_boolean())
+        return;
+    int bought = raffleTicketsBoughtToday();
+    if (bought >= wanted) {
+        print("Already bought " + bought + " of " + wanted + " raffle tickets today.", "teal");
+        return;
+    }
+    int missing = wanted - bought;
+    print("Buying " + missing + " raffle tickets, with " + bought + " of " + wanted + " bought today.", "teal");
+    //the raffle command returns true when it cannot reach the raffle house
+    int heldBefore = item_amount($item[raffle ticket]);
+    if (!cli_execute("raffle " + missing + " inventory") || item_amount($item[raffle ticket]) < heldBefore + missing)
+        print("ERROR_PLOOP: Could not buy " + missing + " raffle tickets.", "red");
+}
+
 void runNightcapPhase(boolean halloween) {
     if (get_property("ascensionsToday").to_int() != 1) {
         return;
@@ -1791,6 +1823,8 @@ void runNightcapPhase(boolean halloween) {
     } else if (get_property('kingLiberated').to_boolean() && my_inebriety() == inebriety_limit() && my_adventures() == 0) {
         nightcap();
     }
+
+    buyRaffleTicketsIfWanted();
 
     string breakpoint = halloween ? "halloweenEnd" : "end";
     if (!get_property('thoth19_event_list').contains_text(breakpoint)) {
