@@ -63,7 +63,8 @@ prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
 prusias_ploop_smokeMessage = string - message for pre-ascension campfire smokes. if empty, uses the default
 prusias_ploop_nightcapMPA = int
-prusias_ploop_garboAdditionalArg = string
+prusias_ploop_garboAdditionalArg = string - requested Garbo arguments; farmingMethod cowo is omitted for a run when The Coral Corral is unavailable
+prusias_ploop_runBigPieAsdonPrefuel = boolean - opt in to post-run Asdon pie prefueling for all Garbo modes; defaults to false; pies must cost less than 2500 meat, with caps of 1100 fuel and 20000 meat in pie value per day/ascension; Garbo chooses the driving effect and tops off
 prusias_ploop_breakfastAdditionalScript = string
 prusias_ploop_preAscendSoybeanFutures = boolean - spend Interesting Coins on soybean futures before ascending, since the coins do not survive the Astral Gash
 prusias_ploop_postDayScript = string
@@ -78,6 +79,7 @@ prusias_ploop_utsCodpieceCheck = boolean - fill The Eternity Codpiece with five 
 
 Script state tracking - must be skipped by save/load
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
+_prusias_ploop_cowoAsdonPrefuel - date/ascension, accounted fuel, and reserved pie value shared by all Garbo modes; legacy name retained to preserve interrupted prefueling limits
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
 prusias_ploop_clanStashTakenFrom - return to right clan
 prusias_ploop_validSaves - list of valid save states
@@ -86,6 +88,7 @@ prusias_ploop_runNextDate - date the run next tracker was last updated
 */
 boolean [string] skip_props = {
     "_prusias_ploop_got_steel_organ": true,
+    "_prusias_ploop_cowoAsdonPrefuel": true,
     "prusias_ploop_takenFromClanStashItems": true,
     "prusias_ploop_clanStashTakenFrom": true,
     "prusias_ploop_validSaves": true,
@@ -1186,8 +1189,81 @@ void garboUsage(string x) {
         garboString += " " + x;
     if (get_property("prusias_ploop_garboAdditionalArg") != "")
         garboString += " " + get_property("prusias_ploop_garboAdditionalArg");
+    //Ploop's init sets this exact argument. Keep the saved setting for later legs.
+    if (garboString.contains_text(" farmingMethod cowo")) {
+        if (!get_property("corralUnlocked").to_boolean()) visit_url("seafloor.php");
+        if (!can_adventure($location[The Coral Corral])) {
+            garboString = garboString.replace_string(" farmingMethod cowo", "");
+            print("PLOOP: The Coral Corral is unavailable; skipping cowo for this Garbo run and using Barf Mountain.", "blue");
+        }
+    }
     print("Running garbo with " + garboString);
     runGarboWithDigitizeRecovery(garboString);
+}
+
+void prefuelAsdonWithBigPies() {
+    if (!get_property("prusias_ploop_runBigPieAsdonPrefuel").to_boolean()) return;
+    if (get_workshed() != $item[Asdon Martin keyfob (on ring)] || !can_interact()) return;
+
+    //262 dinner rolls average 1179 fuel. Stay below that, and value even owned
+    //pies against the meat cap. Garbo chooses the driving effect and tops off.
+    int fuelCap = 1100;
+    int meatCap = 20000;
+    int piePriceLimit = 2500; //Exclusive; applies to owned pies as well as purchases.
+    int maxPieFuel = 200;
+    item pie = $item[pie man was not meant to eat];
+    //Keep the existing state key so switching modes does not reset the limits.
+    string stateProperty = "_prusias_ploop_cowoAsdonPrefuel";
+    string scope = today_to_string() + "-" + my_ascensions();
+    int accountedFuel = max(0, get_fuel());
+    int committedValue = 0;
+    string [int] saved = get_property(stateProperty).split_string(":");
+    if (count(saved) == 3 && saved[0] == scope) {
+        //Previously supplied fuel still counts after Garbo spends it on a buff.
+        accountedFuel = max(accountedFuel, saved[1].to_int());
+        committedValue = max(0, saved[2].to_int());
+    }
+    set_property(stateProperty, scope + ":" + accountedFuel + ":" + committedValue);
+
+    //Use the maximum yield, so even a lucky pie cannot exceed the fuel cap.
+    while (accountedFuel + maxPieFuel <= fuelCap) {
+        int price = mall_price(pie, 0.0);
+        if (price >= piePriceLimit) {
+            print("Asdon prefueling stopped: pie price is " + price
+                + " meat; it must be below " + piePriceLimit + ". Leaving the rest to Garbo.", "blue");
+            return;
+        }
+        if (price <= 0 || price > meatCap - committedValue) {
+            print("Asdon prefueling stopped at the pie value limit or an unavailable price; leaving the rest to Garbo.", "blue");
+            return;
+        }
+
+        int fuelBefore = get_fuel();
+        int accountedBefore = accountedFuel;
+        //Reserve both allowances BEFORE buying or converting. If execution is
+        //interrupted, a rerun retains this reservation rather than paying twice.
+        accountedFuel = accountedFuel + maxPieFuel;
+        committedValue = committedValue + price;
+        set_property(stateProperty, scope + ":" + accountedFuel + ":" + committedValue);
+
+        if (item_amount(pie) == 0 && buy(1, pie, min(price, piePriceLimit - 1)) != 1) {
+            print("Asdon prefueling could not buy a pie within its price limit; leaving the rest to Garbo.", "orange");
+            return;
+        }
+        boolean fueled = cli_execute("asdonmartin fuel 1 pie man was not meant to eat");
+        int fuelAdded = get_fuel() - fuelBefore;
+        if (!fueled || fuelAdded <= 0) {
+            print("Asdon prefueling did not confirm a fuel increase; keeping the reservation and leaving the rest to Garbo.", "orange");
+            return;
+        }
+
+        //A confirmed conversion lets us replace its reservation with the actual
+        //yield. Never release the pie value reservation on retries or failures.
+        accountedFuel = accountedBefore + fuelAdded;
+        set_property(stateProperty, scope + ":" + accountedFuel + ":" + committedValue);
+    }
+    print("Asdon prefueling finished: " + get_fuel() + " fuel in the tank; "
+        + committedValue + " of " + meatCap + " meat in pie value committed. Garbo handles the effect and any top-off.", "blue");
 }
 
 void postRunNoGarbo() {
@@ -1210,36 +1286,8 @@ void postRunNoGarbo() {
     unequipFamiliarItem($familiar[Left-Hand Man]);
     
 
-    //insert asdon buffing
-    //The Asdon holds one driving style at a time, and garbo's cowo mode drives it
-    //waterproofly. Observantly turns bought here are wiped by the next garbo run and
-    //bought back by the leg after it, so both sides pay for fuel every cycle. Leave
-    //the workshed to garbo whenever cowo is among the arguments it is passed.
-    if (get_workshed() == $item[Asdon Martin keyfob (on ring)]) {
-        if (get_property("prusias_ploop_garboAdditionalArg").contains_text("cowo")) {
-            print("Skipping asdon buffing; garbo is running cowo and drives waterproofly.");
-        } else {
-            int numTurns = 1260; //set this value manually
-            int numBuffs = numTurns/30 + 1;
-            int numPies = (numBuffs * 37)/150 + 1;
-            int numSodaBreads = (numBuffs * 37)/6 + 1;
-            if (available_amount($item[pie man was not meant to eat]) < numPies) {
-                cli_execute("buy " + numPies + " pie man was not meant to eat @3000");
-            } else {
-                cli_execute("acquire " + numPies + " pie man was not meant to eat");
-            }
-            if (available_amount($item[pie man was not meant to eat]) < numPies) {
-                cli_execute("make " + numSodaBreads + " loaf of soda bread");
-                cli_execute("asdonmartin fuel " + numSodaBreads + " loaf of soda bread");
-            } else {
-                cli_execute("asdonmartin fuel " + numPies + " pie man was not meant to eat");
-            }
-
-            while (get_fuel() >= 37) {
-                cli_execute("asdonmartin drive observantly");
-            }
-        }
-    }
+    //Asdon prefueling is shared by every Garbo mode; Garbo selects the effect.
+    prefuelAsdonWithBigPies();
     if (available_amount($item[5553]) > 0) {
         //rain-doh
         cli_execute("use can of rain-doh");
