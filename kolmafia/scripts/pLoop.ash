@@ -69,6 +69,7 @@ prusias_ploop_breakfastAdditionalScript = string
 prusias_ploop_preAscendSoybeanFutures = boolean - spend Interesting Coins on soybean futures before ascending, since the coins do not survive the Astral Gash
 prusias_ploop_postDayScript = string
 prusias_ploop_alwaysSteelOrgan = boolean
+prusias_ploop_openKnobTreasury = boolean
 
 Smol specific
 prusias_ploop_smolNoSaladFork = boolean
@@ -256,6 +257,7 @@ string ploopChunkHelpHtml() {
     foreach index, chunk in PLOOP_CHUNKS {
         output.append(ploopHelpEntryHtml("ploop run " + chunk.name, chunk.description));
     }
+    output.append(ploopHelpEntryHtml("ploop knob", "Opens Cobb's Knob Treasury now: adventures in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and uses the council's map. Runs whether or not <b>prusias_ploop_openKnobTreasury</b> is set."));
     return output.to_string();
 }
 
@@ -328,6 +330,7 @@ void optional_help_info() {
     output.append(ploopHelpSectionHtml("Ascension and nightcap") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_preAscendSoybeanFutures", "Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs."));
     output.append(ploopHelpOptionHtml("prusias_ploop_alwaysSteelOrgan", "Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_openKnobTreasury", "Set to <b>true</b> to open Cobb's Knob Treasury after the loop script, by adventuring in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and using the council's map."));
     output.append(ploopHelpOptionHtml("prusias_ploop_postRunMoonTune", "Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign."));
     output.append(ploopHelpOptionHtml("prusias_ploop_nightcapMPA", "False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap."));
     output.append(ploopHelpOptionHtml("prusias_ploop_smokeMessage", "Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>."));
@@ -1455,6 +1458,84 @@ void acquireSteelOrganIfNeeded() {
     cli_execute("ploopgoals goal organ");
 }
 
+//can_adventure is already true while holding the key and the map, before the map is used
+boolean knobOpen() {
+    string quest = get_property("questL05Goblin");
+    return quest != "" && quest != "unstarted" && quest != "started";
+}
+
+//The Treasury opens with the Knob: the Outskirts' encryption key plus the council's map.
+//A new ascension resets the level 5 quest, so this runs once per loop.
+void openKnobTreasury() {
+    if (knobOpen()) {
+        print("The Knob Treasury is already open.", "teal");
+        return;
+    }
+
+    if (my_level() < 5) {
+        print("ERROR_PLOOP: Opening the Knob Treasury needs level 5 for the council's map, but you are level " + my_level() + ".", "red");
+        return;
+    }
+    if (get_property("questL05Goblin") == "unstarted") {
+        visit_url("council.php");
+    }
+    if (item_amount($item[Cobb's Knob map]) == 0) {
+        print("ERROR_PLOOP: No Cobb's Knob map, so the Knob Treasury was not opened.", "red");
+        return;
+    }
+
+    print("Opening the Knob Treasury", "teal");
+    item key = $item[Knob Goblin encryption key];
+    if (item_amount(key) == 0 && my_adventures() < 11) {
+        if (item_amount($item[astral six-pack]) > 0 && !cli_execute("use astral six-pack"))
+            print("Could not open the astral six-pack.", "teal");
+        if (item_amount($item[astral pilsner]) > 0 && my_inebriety() < inebriety_limit()) {
+            if (!cli_execute("cast ode to booze"))
+                print("Could not cast The Ode to Booze; drinking without it.", "teal");
+            //drinksilent skips mafia's Ode confirm dialog
+            if (!cli_execute("drinksilent 1 astral pilsner"))
+                print("Could not drink an astral pilsner.", "teal");
+        }
+    }
+
+    string[int] choices = {111: "3", 113: "2", 118: "1"};
+    string[int] savedChoices;
+    foreach choice, option in choices {
+        savedChoices[choice] = get_property("choiceAdventure" + choice);
+        set_property("choiceAdventure" + choice, option);
+    }
+    try {
+        //the key is a delayed noncombat, so this repeats up to the cap.
+        //The macro replaces whatever combat script is active, which may only
+        //handle another script's monsters.
+        int tries = 0;
+        while (item_amount(key) == 0 && my_adventures() > 0 && tries < 25) {
+            tries += 1;
+            if (!adv1($location[The Outskirts of Cobb's Knob], -1, "attack; repeat;")) {
+                break;
+            }
+        }
+    } finally {
+        foreach choice, option in savedChoices {
+            set_property("choiceAdventure" + choice, option);
+        }
+    }
+
+    if (item_amount(key) == 0) {
+        print("ERROR_PLOOP: No Knob Goblin encryption key from The Outskirts of Cobb's Knob, so the Knob Treasury was not opened.", "red");
+        return;
+    }
+    if (!use(1, $item[Cobb's Knob map]) || !knobOpen()) {
+        print("ERROR_PLOOP: Could not open the Knob Treasury with Cobb's Knob map.", "red");
+    }
+}
+
+void openKnobTreasuryIfNeeded() {
+    if (get_property("prusias_ploop_openKnobTreasury").to_boolean() && !knobOpen()) {
+        openKnobTreasury();
+    }
+}
+
 void tunePostRunMoonIfNeeded() {
     if (get_property('moonTuned').to_boolean() || get_property("prusias_ploop_postRunMoonTune") == "") {
         return;
@@ -1477,6 +1558,7 @@ void installPostLoopWorkshedIfNeeded() {
 
 void prepareForPostRun() {
     acquireSteelOrganIfNeeded();
+    openKnobTreasuryIfNeeded();
     tunePostRunMoonIfNeeded();
     returnClanStashItems();
     installPostLoopWorkshedIfNeeded();
@@ -2019,6 +2101,9 @@ void main(string input) {
                 return;
             case "listsaves":
                 listSaves();
+                return;
+            case "knob":
+                openKnobTreasury();
                 return;
             case "options":
             case "option":
