@@ -68,8 +68,7 @@ prusias_ploop_runBigPieAsdonPrefuel = boolean - opt in to post-run Asdon pie pre
 prusias_ploop_breakfastAdditionalScript = string
 prusias_ploop_preAscendSoybeanFutures = boolean - spend Interesting Coins on soybean futures before ascending, since the coins do not survive the Astral Gash
 prusias_ploop_postDayScript = string
-prusias_ploop_buyRaffleTickets = boolean - buy raffle tickets at the end of the day
-prusias_ploop_raffleTicketCount = int - how many raffle tickets to have bought by the end of the day
+prusias_ploop_raffleTicketCount = int - raffle tickets to have bought by the end of the day, 0 or empty to buy none
 prusias_ploop_alwaysSteelOrgan = boolean
 
 Smol specific
@@ -344,8 +343,7 @@ void optional_help_info() {
     output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself"));
     output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work."));
     output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "Set to <b>item id</b> you would like to dupe"));
-    output.append(ploopHelpOptionHtml("prusias_ploop_buyRaffleTickets", "Set to <b>true</b> to buy raffle tickets at the end of the day, up to <b>prusias_ploop_raffleTicketCount</b>. Tickets already bought today count towards it. Tickets cost 10,000 meat each."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "How many raffle tickets to have bought by the end of the day."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "Set to the <b>number</b> of raffle tickets to have bought by the end of the day. Tickets already bought today count towards it. Tickets cost 10,000 meat each. 0 or empty buys none."));
     output.append(ploopHelpSectionHtml("A Shrunken Adventurer am I") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_smolNoSaladFork", "Set to true to disable preparing a salad fork before ascension for smol"));
     output.append(ploopHelpOptionHtml("prusias_ploop_smolNoFrostyMug", "Set to true to disable preparing a frosty mug before ascension for smol"));
@@ -1794,8 +1792,7 @@ int raffleTicketsBoughtToday() {
 
 void buyRaffleTicketsIfWanted() {
     int wanted = get_property("prusias_ploop_raffleTicketCount").to_int();
-    if (!get_property("prusias_ploop_buyRaffleTickets").to_boolean() || wanted <= 0
-            || !get_property("kingLiberated").to_boolean())
+    if (wanted <= 0 || !get_property("kingLiberated").to_boolean())
         return;
     int bought = raffleTicketsBoughtToday();
     if (bought >= wanted) {
