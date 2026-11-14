@@ -81,6 +81,7 @@ prusias_ploop_utsCodpieceCheck = boolean - fill The Eternity Codpiece with five 
 prusias_ploop_leg1Pearlo = boolean - opt in to profitable wineglass pearl farming before ascension
 
 Script state tracking - must be skipped by save/load
+_prusias_ploop_breakfastAugmented - completion flag for supplemental breakfast, reset on rollover and ascension
 _prusias_ploop_leg1PearloStage - daily checkpoint for resuming Leg 1 pearl farming
 _prusias_ploop_leg1PearloTurns - daily adventure budget from pearlo's profit report
 prusias_ploop_leg1PearloFishyBackup - saved pipe count, retrieval settings, and Lutz flag; no leading underscore so interrupted cleanup can recover the pipe after rollover
@@ -93,6 +94,7 @@ prusias_ploop_runNextCompletedChunk - last chunk completed by ploop run next
 prusias_ploop_runNextDate - date the run next tracker was last updated
 */
 boolean [string] skip_props = {
+    "_prusias_ploop_breakfastAugmented": true,
     "_prusias_ploop_leg1PearloStage": true,
     "_prusias_ploop_leg1PearloTurns": true,
     "prusias_ploop_leg1PearloFishyBackup": true,
@@ -334,7 +336,7 @@ void optional_help_info() {
     output.append(ploopHelpOptionHtml("prusias_ploop_garboAdditionalArg", "Additional arguments to pass to garbo, separated by spaces. Init commands replace this setting with the selected options: cockroach targeting for all inits, plus optional cowo farming for utsinit."));
     output.append(ploopHelpOptionHtml("prusias_ploop_loopScriptClan", "Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan. <b>utsinit</b> prompts for this setting; <b>Bonus Adventures From Hell</b> is recommended for <b>underthesea</b>."));
     output.append(ploopHelpSectionHtml("Custom scripts") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "Will cli_execute whatever this property is set to after breakfast."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "CLI command to run at the end of pLoop's supplemental breakfast. Supplemental breakfast can run again after rollover or ascension."));
     output.append(ploopHelpOptionHtml("prusias_ploop_postDayScript", "Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded."));
     output.append(ploopHelpSectionHtml("Ascension and nightcap") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_preAscendSoybeanFutures", "Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs."));
@@ -353,7 +355,7 @@ void optional_help_info() {
     output.append(ploopHelpOptionHtml("prusias_ploop_useAdvForPvpAtBoxingDaycare", "Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare."));
     output.append(ploopHelpSectionHtml("Other automation") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself"));
-    output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> for ploop to try to dupe with Machine Elf. Your CS script must use exactly 5 DMT free fights and nothing more for this to work."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> to try to duplicate an item with the Machine Elf. Your ascension script can use up to 5 Deep Machine Tunnels free fights and should leave the following choice adventure for pLoop. pLoop finishes any remaining fights before taking that choice."));
     output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "Set to <b>item id</b> you would like to dupe"));
     output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "Set to the <b>number</b> of raffle tickets to have bought by the end of the day. Tickets already bought today count towards it. Tickets cost 10,000 meat each. 0 or empty buys none."));
     output.append(ploopHelpSectionHtml("A Shrunken Adventurer am I") + "<br>");
@@ -643,8 +645,15 @@ void prepPvp() {
     }
 }
 
-void augmentBreakfast() {
-    pBreakfast();
+void runPloopBreakfast(boolean forceMafiaBreakfast) {
+    if (forceMafiaBreakfast || !get_property("breakfastCompleted").to_boolean()) {
+        pBreakfast();
+    }
+
+    string completedProperty = "_prusias_ploop_breakfastAugmented";
+    if (get_property(completedProperty).to_boolean()) {
+        return;
+    }
 
     //double ice
     if (!to_boolean(get_property("_aprilShower")))
@@ -683,8 +692,8 @@ void augmentBreakfast() {
     if (get_property("prusias_ploop_breakfastAdditionalScript") != "") {
         cli_execute(get_property("prusias_ploop_breakfastAdditionalScript"));
     }
-    
 
+    set_property(completedProperty, true);
 }
 
 boolean useCombo() {
@@ -1292,7 +1301,8 @@ void postRunNoGarbo() {
     if (!(available_amount($item[134]) > 0 || available_amount($item[4770]) > 0 || available_amount($item[4769]) > 0 || available_amount($item[6775]) > 0)) {
         retrieve_item(1,$item[bitchin' meatcar]);
     }
-    augmentBreakfast();
+    // Rerun Mafia breakfast after pulling items from storage and opening beach access.
+    runPloopBreakfast(true);
 
     if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49)
         cli_execute("eat magical sausage");
@@ -1616,9 +1626,7 @@ void runBreakfastPhase(boolean halloween) {
     }
 
     use_familiar($familiar[none]);
-    if (!get_property("breakfastCompleted").to_boolean()) {
-        augmentBreakfast();
-    }
+    runPloopBreakfast(false);
 }
 
 string leg1PearloStage = "_prusias_ploop_leg1PearloStage";
@@ -2107,15 +2115,11 @@ void runLeg2GarboPhase(boolean halloween) {
             postRun("nobarf");
             cli_execute("freecandy");
         } else {
-            if (!get_property("breakfastCompleted").to_boolean()) {
-                augmentBreakfast();
-            }
+            runPloopBreakfast(false);
             postRun("");
         }
     }
-    if (!get_property("breakfastCompleted").to_boolean()) {
-        augmentBreakfast();
-    }
+    runPloopBreakfast(false);
 }
 
 void runPostDayScript() {
