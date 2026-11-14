@@ -77,8 +77,12 @@ prusias_ploop_smolNoFrostyMug = boolean
 
 11037 Leagues Under The Sea specific
 prusias_ploop_utsCodpieceCheck = boolean - fill The Eternity Codpiece with five unblemished pearls before ascending into path 55, buying any that are missing at up to valueOfAdventure * 10 * 2 meat each
+prusias_ploop_leg1Pearlo = boolean - opt in to profitable wineglass pearl farming before ascension
 
 Script state tracking - must be skipped by save/load
+_prusias_ploop_leg1PearloStage - daily checkpoint for resuming Leg 1 pearl farming
+_prusias_ploop_leg1PearloTurns - daily adventure budget from pearlo's profit report
+prusias_ploop_leg1PearloFishyBackup - saved pipe count, retrieval settings, and Lutz flag; no leading underscore so interrupted cleanup can recover the pipe after rollover
 _prusias_ploop_got_steel_organ - Only used on leg 2 and reset on ascension/day
 _prusias_ploop_cowoAsdonPrefuel - date/ascension, accounted fuel, and reserved pie value shared by all Garbo modes; legacy name retained to preserve interrupted prefueling limits
 prusias_ploop_takenFromClanStashItems - items that need to be returned to stash
@@ -88,6 +92,9 @@ prusias_ploop_runNextCompletedChunk - last chunk completed by ploop run next
 prusias_ploop_runNextDate - date the run next tracker was last updated
 */
 boolean [string] skip_props = {
+    "_prusias_ploop_leg1PearloStage": true,
+    "_prusias_ploop_leg1PearloTurns": true,
+    "prusias_ploop_leg1PearloFishyBackup": true,
     "_prusias_ploop_got_steel_organ": true,
     "_prusias_ploop_cowoAsdonPrefuel": true,
     "prusias_ploop_takenFromClanStashItems": true,
@@ -243,6 +250,7 @@ void loadAllProperties(string fileName) {
     string [string] prop_map;
     file_to_map(realFileName, prop_map);
     foreach prop, val in prop_map {
+        if (skip_props contains prop) continue;
         print("Setting " + prop + " to " + val);
         set_property(prop, val);
     }
@@ -333,6 +341,7 @@ void optional_help_info() {
     output.append(ploopHelpOptionHtml("prusias_ploop_openKnobTreasury", "Set to <b>true</b> to open Cobb's Knob Treasury after the loop script, by adventuring in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and using the council's map."));
     output.append(ploopHelpOptionHtml("prusias_ploop_postRunMoonTune", "Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign."));
     output.append(ploopHelpOptionHtml("prusias_ploop_nightcapMPA", "False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_leg1Pearlo", "Set to <b>true</b> to farm profitable pearls on Leg 1 after rollover, before ascending. Requires an equippable Drunkula's wineglass. pLoop checks profit before saving Fishy and reserves turns for the expanded diet. Off by default; setting it to false won't interrupt a route already past the first Garbo pass."));
     output.append(ploopHelpOptionHtml("prusias_ploop_smokeMessage", "Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>."));
     output.append(ploopHelpOptionHtml("prusias_ploop_optOutSmoking", "Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked."));
     output.append(ploopHelpOptionHtml("prusias_ploop_disableOffhandRemarkable", "Set to true to disable casting offhand remarkable on rollover"));
@@ -1161,7 +1170,7 @@ void runGarboWithDigitizeRecovery(string command) {
     }
 }
 
-void garboUsage(string x) {
+void garboUsage(string x, boolean allowYachtzee) {
 	print("trying to run garbo","teal");
     if (have_familiar($familiar[Patriotic Eagle])) {
         if (get_property("_citizenZone") != "Barf Mountain") {
@@ -1186,7 +1195,7 @@ void garboUsage(string x) {
         cli_execute("use lodestone");
     // Let users opt in to candy dishes with the garbo_candydish preference.
     string garboString = "garbo";
-    if (yachtzeeAccess())
+    if (allowYachtzee && yachtzeeAccess())
         garboString += " yachtzeechain";
     if (x != "")
         garboString += " " + x;
@@ -1202,6 +1211,10 @@ void garboUsage(string x) {
     }
     print("Running garbo with " + garboString);
     runGarboWithDigitizeRecovery(garboString);
+}
+
+void garboUsage(string x) {
+    garboUsage(x, true);
 }
 
 void prefuelAsdonWithBigPies() {
@@ -1606,12 +1619,118 @@ void runBreakfastPhase(boolean halloween) {
     }
 }
 
+string leg1PearloStage = "_prusias_ploop_leg1PearloStage";
+string leg1PearloTurns = "_prusias_ploop_leg1PearloTurns";
+// Unlike daily checkpoints, this backup must survive rollover to get the pipe back.
+string leg1PearloFishyBackup = "prusias_ploop_leg1PearloFishyBackup";
+
+boolean leg1WineglassReady() {
+    item glass = $item[Drunkula's wineglass];
+    return (item_amount(glass) > 0 || have_equipped(glass)) && can_equip(glass);
+}
+
+boolean bringLeg1WineglassToInventory() {
+    item glass = $item[Drunkula's wineglass];
+    if (leg1WineglassReady()) return true;
+    if (!can_equip(glass)) return false;
+    if (closet_amount(glass) > 0) return take_closet(1, glass) && leg1WineglassReady();
+    if (can_interact() && storage_amount(glass) > 0) return take_storage(1, glass) && leg1WineglassReady();
+    return false;
+}
+
+void restoreLeg1PearloFishy() {
+    string backup = get_property(leg1PearloFishyBackup);
+    if (backup == "") return;
+    string [int] saved = backup.split_string(";");
+    if (saved.count() != 5) abort("ERROR_PLOOP: Invalid Leg 1 Fishy backup: " + backup);
+    set_property("autoSatisfyWithCloset", saved[2]);
+    set_property("autoSatisfyWithStorage", saved[3]);
+    // Lutz resets at rollover. Never copy yesterday's used flag into today.
+    if (saved[0] == today_to_string()) set_property("_skateBuff1", saved[4]);
+    int missing = saved[1].to_int() - item_amount($item[fishy pipe]);
+    if (missing > 0 && (!take_closet(missing, $item[fishy pipe])
+            || item_amount($item[fishy pipe]) < saved[1].to_int())) {
+        abort("ERROR_PLOOP: Could not restore the fishy pipe. The backup is still saved; finish any combat or choice and rerun pLoop.");
+    }
+    set_property(leg1PearloFishyBackup, "");
+}
+
+void runGarboSavingLeg1Fishy(string args, string nextStage) {
+    item pipe = $item[fishy pipe];
+    int copies = item_amount(pipe);
+    set_property(leg1PearloFishyBackup, today_to_string() + ";" + copies
+        + ";" + get_property("autoSatisfyWithCloset")
+        + ";" + get_property("autoSatisfyWithStorage") + ";" + get_property("_skateBuff1"));
+    try {
+        if (copies > 0 && !put_closet(copies, pipe)) abort("ERROR_PLOOP: Could not protect the fishy pipe.");
+        if (item_amount(pipe) > 0) abort("ERROR_PLOOP: A fishy pipe remains accessible before Garbo.");
+        set_property("autoSatisfyWithCloset", "false");
+        set_property("autoSatisfyWithStorage", "false");
+        set_property("_skateBuff1", "true");
+        garboUsage(args, nextStage == "initialDone");
+        set_property(leg1PearloStage, nextStage);
+    } finally {
+        restoreLeg1PearloFishy();
+    }
+}
+
+int leg1PearloBudget(string report) {
+    // Mafia's CLI capture wraps colored report lines in HTML.
+    report = entity_decode(replace_all(create_matcher("(?i)</?font\\b[^>]*>", report), ""));
+    if (report.contains_text("overcapped beyond owned extenders")) return 0;
+    // Pair each zone's estimated turns with its own verdict. An obtained pearl
+    // can still be marked GO in the report, but can't be farmed again.
+    matcher zones = create_matcher("(?m)^[ \\t]*--- [a-z]+ \\(([^\\r\\n]+)\\) ---[ \\t]*\\R"
+        + "(?:(?![ \\t]*---)[^\\r\\n]*\\R)*?[ \\t]*res [^\\r\\n]*?([0-9]+) turns [^\\r\\n]*\\R"
+        + "[ \\t]*costs:[^\\r\\n]*\\R[ \\t]*expected profit: [1-9][0-9,]* meat [^\\r\\n]*\\bGO[ \\t]*\\r?$", report);
+    int turns = 0;
+    while (zones.find()) {
+        location zone = zones.group(1).to_location();
+        if (zone != $location[none] && can_adventure(zone)) turns += zones.group(2).to_int();
+    }
+    return turns > 0 ? turns + 5 : 0;
+}
+
+boolean prepareLeg1Pearlo(boolean halloween) {
+    string stage = get_property(leg1PearloStage);
+    if (stage != "" && stage != "planned") return true;
+    if (halloween || !get_property("kingLiberated").to_boolean()
+            || !get_property("prusias_ploop_leg1Pearlo").to_boolean()
+            || !bringLeg1WineglassToInventory()) {
+        if (stage == "planned") set_property(leg1PearloStage, "");
+        return false;
+    }
+    if (stage == "planned") return true;
+    // The second pass owns its diet and turn floor. Garbo rejects duplicate args.
+    string additional = get_property("prusias_ploop_garboAdditionalArg");
+    if (create_matcher("(?i)(?:^|\\s)(?:!?nodiet(?:\\s|$)|turns(?:[=\\s]|$)|-?[0-9]+(?:\\s|$))", additional).find()) {
+        print("Leg 1 pearlo: remove custom Garbo turns/nodiet arguments to let pLoop manage its limited pass.", "orange");
+        return false;
+    }
+    string report;
+    string errorMessage = catch {
+        report = cli_execute_output("pearlo profit drunk overcapped !force");
+    };
+    int turns = leg1PearloBudget(report);
+    if (errorMessage != "" || turns == 0) {
+        print("Leg 1 pearlo: no profitable unfinished pearl confirmed; running normal Garbo.", "blue");
+        if (errorMessage != "") print(errorMessage, "orange");
+        return false;
+    }
+    set_property(leg1PearloTurns, turns);
+    set_property(leg1PearloStage, "planned");
+    print("Leg 1 pearlo: profitable in the wineglass report; saving Fishy for an estimated " + turns + " adventures including buffer.", "teal");
+    return true;
+}
+
 void runLeg1GarboPhase(boolean halloween) {
     if (get_property("ascensionsToday").to_int() != 0) {
         return;
     }
 
-    if (my_inebriety() <= inebriety_limit() && my_adventures() > 0 && my_familiar() != $familiar[Stooper]) {
+    if (my_inebriety() <= inebriety_limit()
+            && ((my_adventures() > 0 && my_familiar() != $familiar[Stooper])
+                || get_property(leg1PearloStage) == "planned")) {
         if (halloween) {
             cli_execute("CONSUME ALL VALUE 10000");
             if (get_property("prusias_ploop_garboWorkshed") == "") {
@@ -1625,10 +1744,13 @@ void runLeg1GarboPhase(boolean halloween) {
                 print("WARNING_PLOOP: Somehow consume + freecandy left empty liver", "red");
             }
         } else {
-            if (get_property("prusias_ploop_garboWorkshed") == "" || get_property("_workshedItemUsed").to_boolean()) {
-                garboUsage("ascend");
+            string args = "ascend";
+            if (get_property("prusias_ploop_garboWorkshed") != "" && !get_property("_workshedItemUsed").to_boolean())
+                args += ` workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`;
+            if (prepareLeg1Pearlo(halloween)) {
+                if (get_property(leg1PearloStage) == "planned") runGarboSavingLeg1Fishy(args, "initialDone");
             } else {
-                garboUsage(`ascend workshed="` + get_property("prusias_ploop_garboWorkshed") + `"`);
+                garboUsage(args);
             }
 
             if (my_inebriety() < inebriety_limit()) {
@@ -1655,27 +1777,172 @@ void spendPvpFightsIfNeeded() {
     }
 }
 
+// Use the same compatible extender set pearlo prefers in wineglass mode.
+void equipLeg1PearloOrgans() {
+    item glass = $item[Drunkula's wineglass];
+    if (!leg1WineglassReady()) abort("ERROR_PLOOP: Put an equippable Drunkula's wineglass in inventory to resume Leg 1.");
+    if (!have_equipped(glass)) {
+        if (weapon_hands(equipped_item($slot[weapon])) > 1 && !equip($slot[weapon], $item[none]))
+            abort("ERROR_PLOOP: Could not clear the weapon slot for the wineglass.");
+        if (!equip($slot[off-hand], glass)) abort("ERROR_PLOOP: Could not equip the wineglass.");
+    }
+    foreach extender in $items[angelbone chopsticks, devilbone corset, devilbone greaves, angelbone totem] {
+        if (have_equipped(extender) || item_amount(extender) == 0 || !can_equip(extender)) continue;
+        if (!equip(extender)) abort("ERROR_PLOOP: Could not equip " + extender + ".");
+    }
+    if (my_fullness() > fullness_limit() || my_spleen_use() > spleen_limit())
+        abort("ERROR_PLOOP: Equipped organ capacity is too low to adventure. Restore the required gear and rerun preascend.");
+}
+
+string leg1ExpandedDiet() {
+    return "CONSUME ORGANS " + max(0, fullness_limit() - my_fullness()) + " 0 "
+        + max(0, spleen_limit() - my_spleen_use());
+}
+
+int leg1ExpandedDietYield() {
+    if (fullness_limit() <= my_fullness() && spleen_limit() <= my_spleen_use()) return 0;
+    string report = cli_execute_output(leg1ExpandedDiet() + " SIM");
+    matcher yield = create_matcher("Adventure yield should be roughly ([0-9,]+)-[0-9,]+", report);
+    if (!yield.find()) abort("ERROR_PLOOP: Could not read the expanded CONSUME simulation. Rerun preascend after checking CONSUME.");
+    return yield.group(1).replace_string(",", "").to_int();
+}
+
+void burnLeg1PearloLeftovers() {
+    // Garbo's outfits forbid organ extenders. While over capacity, spend the
+    // remaining turns with legal wineglass gear and an explicit attack macro.
+    print("Leg 1 pearlo: burning " + my_adventures() + " leftover adventures at Barf Mountain with organ gear equipped.", "teal");
+    while (my_adventures() > 0) {
+        equipLeg1PearloOrgans();
+        location farm = $location[Barf Mountain];
+        if (!can_adventure(farm) || have_effect($effect[Beaten Up]) > 0 || !restore_hp(my_maxhp()))
+            abort("ERROR_PLOOP: Cannot burn expanded-organ turns safely at Barf Mountain. Spend them with the organ gear and wineglass equipped, then rerun preascend.");
+        int before = my_adventures();
+        if (!adv1(farm, -1, "attack; repeat;") || current_round() > 0 || handling_choice()
+                || have_effect($effect[Beaten Up]) > 0 || my_adventures() >= before
+                || get_property("lastEncounter") == "Food Coma") {
+            abort("ERROR_PLOOP: Leg 1 leftover turn burn stopped. Resolve the encounter before rerunning preascend.");
+        }
+    }
+}
+
+boolean leg1PearloNeedsOrganGear() {
+    int stomachBonus = 0;
+    int spleenBonus = 0;
+    foreach extender in $items[angelbone chopsticks, devilbone corset, devilbone greaves, angelbone totem] {
+        if (!have_equipped(extender)) continue;
+        stomachBonus += numeric_modifier(extender, "Stomach Capacity").to_int();
+        spleenBonus += numeric_modifier(extender, "Spleen Capacity").to_int();
+    }
+    return my_fullness() > fullness_limit() - stomachBonus || my_spleen_use() > spleen_limit() - spleenBonus;
+}
+
+void runLeg1PearloPreAscend() {
+    string stage = get_property(leg1PearloStage);
+    if (stage == "done") return;
+    if (stage == "planned") abort("ERROR_PLOOP: Finish the first Garbo pass with ploop run leg1garbo before continuing to preascend.");
+    if (current_round() > 0 || handling_choice() || in_multi_fight() || choice_follows_fight())
+        abort("ERROR_PLOOP: Finish the current combat or choice before resuming Leg 1 pearlo.");
+    if (!leg1WineglassReady()) abort("ERROR_PLOOP: Bring Drunkula's wineglass back to inventory before resuming Leg 1 pearlo.");
+
+    if (stage == "initialDone") {
+        // Record the start before CONSUME; the live liver check avoids a second
+        // nightcap if the drink succeeded just before an interruption.
+        set_property(leg1PearloStage, "nightcapping");
+        if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper]) preCSrun();
+        stage = "nightcapping";
+    }
+    if (stage == "nightcapping") {
+        if (my_inebriety() <= inebriety_limit()) {
+            // Match the normal pre-ascension nightcap valuation.
+            int voa = get_property("valueOfAdventure").to_int() / 2;
+            if (!cli_execute("CONSUME NIGHTCAP VALUE " + voa))
+                abort("ERROR_PLOOP: Leg 1 nightcap failed; rerun preascend to resume.");
+        }
+        if (my_inebriety() <= inebriety_limit()) abort("ERROR_PLOOP: CONSUME did not leave you overdrunk.");
+        set_property(leg1PearloStage, "nightcapped");
+        stage = "nightcapped";
+    }
+    if (stage == "nightcapped") {
+        equipLeg1PearloOrgans();
+        int dietYield = leg1ExpandedDietYield();
+        int needed = get_property(leg1PearloTurns).to_int();
+        int reserve = max(0, needed - dietYield);
+        print("Leg 1 pearlo: keeping " + reserve + " adventures before the expanded diet (estimated minimum yield " + dietYield + ").", "teal");
+        if (my_adventures() > reserve && !leg1PearloNeedsOrganGear()) {
+            // An absolute floor stays valid across Garbo's Digitize retries.
+            string limit = reserve > 0 ? " turns=-" + reserve : "";
+            runGarboSavingLeg1Fishy("ascend nodiet" + limit, "limitedDone");
+        } else {
+            set_property(leg1PearloStage, "limitedDone");
+        }
+        stage = "limitedDone";
+    }
+    if (stage == "limitedDone") {
+        // A limited Garbo pass can change buffs, gear, or Fishy. Confirm the
+        // economics again before committing extra organs.
+        string report = cli_execute_output("pearlo profit drunk overcapped !force");
+        if (leg1PearloBudget(report) == 0) {
+            print("Leg 1 pearlo: no profitable zone confirmed after Garbo; skipping the expanded diet.", "blue");
+            set_property(leg1PearloStage, "pearlsDone");
+            stage = "pearlsDone";
+        } else {
+            set_property(leg1PearloStage, "expanding");
+            stage = "expanding";
+        }
+    }
+    if (stage == "expanding") {
+        equipLeg1PearloOrgans();
+        if (my_inebriety() <= inebriety_limit())
+            abort("ERROR_PLOOP: Leg 1 is no longer overdrunk; check the wineglass setup before resuming.");
+        if ((my_fullness() < fullness_limit() || my_spleen_use() < spleen_limit())
+                && !cli_execute(leg1ExpandedDiet()))
+            abort("ERROR_PLOOP: Expanded diet stopped. Rerun preascend to fill only the remaining capacity.");
+        set_property(leg1PearloStage, "dietDone");
+        stage = "dietDone";
+    }
+    if (stage == "dietDone") {
+        equipLeg1PearloOrgans();
+        if (my_inebriety() <= inebriety_limit())
+            abort("ERROR_PLOOP: Leg 1 is no longer overdrunk; check the wineglass setup before resuming.");
+        if (my_adventures() > 0 && !cli_execute("pearlo overcapped !force !strand halt=0"))
+            abort("ERROR_PLOOP: Leg 1 pearlo stopped. Rerun preascend to resume with the unfinished pearls.");
+        set_property(leg1PearloStage, "pearlsDone");
+        stage = "pearlsDone";
+    }
+    if (stage != "pearlsDone") abort("ERROR_PLOOP: Unknown Leg 1 pearlo checkpoint: " + stage);
+    if (my_adventures() > 0) {
+        equipLeg1PearloOrgans();
+        if (leg1PearloNeedsOrganGear()) burnLeg1PearloLeftovers();
+        else garboUsage("ascend nodiet", false);
+    }
+    if (my_adventures() > 0) abort("ERROR_PLOOP: Leg 1 still has adventures left. Rerun preascend to finish.");
+    set_property(leg1PearloStage, "done");
+}
+
 void runPreAscensionPhase(boolean halloween) {
     if (get_property("ascensionsToday").to_int() != 0) {
         return;
     }
 
-    if (my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper]) {
+    boolean pearlRoute = get_property(leg1PearloStage) != "";
+    if (pearlRoute) runLeg1PearloPreAscend();
+
+    if (!pearlRoute && my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper]) {
         preCSrun();
     }
-    if (my_inebriety() - inebriety_limit() == 1 && my_familiar() != $familiar[Stooper]) {
+    if (!pearlRoute && my_inebriety() - inebriety_limit() == 1 && my_familiar() != $familiar[Stooper]) {
         use_familiar($familiar[Stooper]);
     }
 
     if (!needToAcquireItem($item[Drunkula's wineglass])) {
         print("Breakfast leg end of day, overdrunk with wineglass", "teal");
-        if (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) {
+        if (!pearlRoute && my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) {
             string nightcapValue = halloween ? "9999" : (get_property("valueOfAdventure").to_int()/2).to_string();
             cli_execute("CONSUME ALL NIGHTCAP VALUE " + nightcapValue);
         }
 
         prepPvp();
-        if (my_inebriety() > inebriety_limit() && my_adventures() > 0) {
+        if (!pearlRoute && my_inebriety() > inebriety_limit() && my_adventures() > 0) {
             if (halloween) {
                 cli_execute("freecandy");
             }
@@ -1717,6 +1984,8 @@ void runPreAscensionPhase(boolean halloween) {
 
 void runAscensionPhase() {
     if (get_property("ascensionsToday").to_int() == 0) {
+        if (get_property(leg1PearloStage) != "" && get_property(leg1PearloStage) != "done")
+            abort("ERROR_PLOOP: Leg 1 pearlo is unfinished. Resume with ploop run preascend before ascending.");
         ascendToValhalla();
     }
 }
@@ -1886,6 +2155,7 @@ void runNightcapPhase(boolean halloween) {
 }
 
 void executePloopChunk(string chunk, boolean halloween) {
+    restoreLeg1PearloFishy();
     switch (chunk) {
         case "breakfast": runBreakfastPhase(halloween); break;
         case "leg1garbo": runLeg1GarboPhase(halloween); break;
