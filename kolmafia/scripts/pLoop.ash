@@ -118,14 +118,14 @@ boolean[string] steel_organ_paths = {
 record PloopChunk { string name; string description; };
 
 PloopChunk[int] PLOOP_CHUNKS = {
-    new PloopChunk("breakfast", "Runs leg 1 setup and breakfast."),
-    new PloopChunk("leg1garbo", "Runs the leg 1 garbo phase."),
-    new PloopChunk("preascend", "Prepares organs, PvP, and remaining adventures for ascension."),
+    new PloopChunk("breakfast", "Sets up leg 1 and runs breakfast."),
+    new PloopChunk("leg1garbo", "Runs Garbo before ascension."),
+    new PloopChunk("preascend", "Prepares organs and spends remaining adventures and PvP fights before ascension."),
     new PloopChunk("ascend", "Enters Valhalla and starts the configured ascension."),
     new PloopChunk("loopscript", "Runs the configured loop script."),
-    new PloopChunk("postscriptprep", "Finishes the run and prepares resources for leg 2."),
-    new PloopChunk("leg2garbo", "Runs the leg 2 garbo phase."),
-    new PloopChunk("nightcap", "Runs nightcap and end-of-loop tracking.")
+    new PloopChunk("postscriptprep", "Finishes the run and sets up leg 2."),
+    new PloopChunk("leg2garbo", "Pulls from storage and runs Garbo after ascension."),
+    new PloopChunk("nightcap", "Nightcaps and records the end-of-day ptrack breakpoint.")
 };
 
 string filePrefix = "data/ploop/saves/";
@@ -263,12 +263,12 @@ void loadAllProperties(string fileName) {
 string ploopChunkHelpHtml() {
     buffer output;
     output.append(ploopHelpSectionHtml("Run individual phases") + "<br>");
-    output.append("Run the loop one phase at a time so you can pause for item farming or other manual tasks between phases. Use <b>ploop run next</b> to advance in order, or run a specific phase by name.<br>");
-    output.append(ploopHelpEntryHtml("ploop run next", "Runs the next chunk tracked for today. <b>prusias_ploop_runNextCompletedChunk</b> stores exactly one of the chunk names listed below."));
+    output.append("Run phases individually to pause for manual tasks between them.<br>");
+    output.append(ploopHelpEntryHtml("ploop run next", "Runs today's next phase in order. <b>prusias_ploop_runNextCompletedChunk</b> stores the last phase completed by this command."));
     foreach index, chunk in PLOOP_CHUNKS {
         output.append(ploopHelpEntryHtml("ploop run " + chunk.name, chunk.description));
     }
-    output.append(ploopHelpEntryHtml("ploop knob", "Opens Cobb's Knob Treasury now: adventures in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and uses the council's map. Runs whether or not <b>prusias_ploop_openKnobTreasury</b> is set."));
+    output.append(ploopHelpEntryHtml("ploop knob", "Opens Cobb's Knob Treasury on demand. Requires level 5 and the council's map. Farms the encryption key in the Outskirts if needed (about 11 turns)."));
     return output.to_string();
 }
 
@@ -298,31 +298,30 @@ void resetRunNextTrackerIfNeeded() {
 void ploopHelper() {
     buffer output;
     output.append("<b>pLooper</b>" + "<br>");
-    output.append("pLooper is a Re-Entrant daily looping wrapper that handles running garbo, ascending, running your ascending script, and garboing again along with other small optimizations." + "<br>");
-    output.append("To use the script, please run <b>ploop init</b> before you run <b>ploop fullday</b>." + "<br>");
+    output.append("pLooper runs Garbo, ascends, runs your ascension script, then runs Garbo again.<br>");
     output.append(ploopHelpSectionHtml("Setup - run one init first") + "<br>");
-    output.append(ploopHelpEntryHtml("ploop init", "Generic init that prompts for pathId. Use this for paths without a dedicated init."));
-    output.append(ploopHelpEntryHtml("ploop csinit", "Initializes pLooper for Community Service (pathId 25)."));
-    output.append(ploopHelpEntryHtml("ploop smolinit", "Initializes pLooper for A Shrunken Adventurer am I (pathId 49)."));
-    output.append(ploopHelpEntryHtml("ploop utsinit", "Initializes pLooper for 11037 Leagues Under The Sea (pathId 55). Sets the ascension script to <b>underthesea</b>. Recommend running underthesea sim first"));
-    output.append(ploopHelpEntryHtml("ploop roboinit", "Initializes pLooper for You, Robot (pathId 41)."));
-    output.append(ploopHelpEntryHtml("ploop listInitArgs", "Lists current values of every preference that any init command can set."));
+    output.append(ploopHelpEntryHtml("ploop init", "Prompts for a path ID and sets up paths without a dedicated init."));
+    output.append(ploopHelpEntryHtml("ploop csinit", "Sets up Community Service (path 25)."));
+    output.append(ploopHelpEntryHtml("ploop smolinit", "Sets up A Shrunken Adventurer am I (path 49)."));
+    output.append(ploopHelpEntryHtml("ploop utsinit", "Sets up 11037 Leagues Under The Sea (path 55) with <b>underthesea</b>. Run <b>underthesea sim</b> first to check your setup."));
+    output.append(ploopHelpEntryHtml("ploop roboinit", "Sets up You, Robot (path 41)."));
+    output.append(ploopHelpEntryHtml("ploop listInitArgs", "Shows current values for preferences set by the init commands."));
     output.append(ploopHelpSectionHtml("Run a full day") + "<br>");
-    output.append(ploopHelpEntryHtml("ploop fullday", "Fullday wrapper"));
+    output.append(ploopHelpEntryHtml("ploop fullday", "Runs the full loop from breakfast to nightcap."));
     output.append(ploopHelpSectionHtml("Run individual phases") + "<br>");
     output.append(ploopHelpEntryHtml("ploop run next", "Runs the next phase tracked for today."));
-    output.append(ploopHelpEntryHtml("ploop run help", "Explains phased runs and lists all phase commands."));
+    output.append(ploopHelpEntryHtml("ploop run help", "Lists individual phases and what they do."));
     output.append(ploopHelpSectionHtml("Pre-ascension acquisition lists") + "<br>");
-    output.append(ploopHelpEntryHtml("ploop clearacquirelist", "Empties Acquisition List so no additional items outside README are acquired before ascension."));
-    output.append(ploopHelpEntryHtml("ploop addacquirelist (item name)", "Adds an item to the Acquisition List. Give the item name as parameter (spaces ok). Will be acquired right before ascension."));
-    output.append(ploopHelpEntryHtml("ploop clearclanstashlist", "Empties pre-ascend clan stash acquisition list."));
-    output.append(ploopHelpEntryHtml("ploop addclanstashlist (item name)", "Adds an item to the pre-ascend clan stash acquisition list. Give the item name as parameter (spaces ok). Will be pulled if exists in stash before ascension, otherwise skipped."));
+    output.append(ploopHelpEntryHtml("ploop clearacquirelist", "Clears the custom pre-ascension acquisition list."));
+    output.append(ploopHelpEntryHtml("ploop addacquirelist (item name)", "Adds an item to acquire before ascension. Names can contain spaces."));
+    output.append(ploopHelpEntryHtml("ploop clearclanstashlist", "Clears the pre-ascension clan stash list."));
+    output.append(ploopHelpEntryHtml("ploop addclanstashlist (item name)", "Adds an item to pull before ascension if it's in the clan stash. Names can contain spaces."));
     output.append(ploopHelpSectionHtml("Save and load configurations") + "<br>");
-    output.append(ploopHelpEntryHtml("ploop listSaves", "Lists all current save states. If you manually delete files from your data folder, this will be out of sync. Tracked by prusias_ploop_validSaves"));
-    output.append(ploopHelpEntryHtml("ploop save (name)", "Saves current state of pLooper to a file with the given name"));
-    output.append(ploopHelpEntryHtml("ploop load (name)", "Loads the state of pLooper from the file with the given name"));
+    output.append(ploopHelpEntryHtml("ploop listSaves", "Lists saved configurations from <b>prusias_ploop_validSaves</b>. Manually deleted saves can still appear here."));
+    output.append(ploopHelpEntryHtml("ploop save (name)", "Saves your current configuration under this name."));
+    output.append(ploopHelpEntryHtml("ploop load (name)", "Loads the named configuration."));
     output.append(ploopHelpSectionHtml("Optional preferences") + "<br>");
-    output.append(ploopHelpEntryHtml("ploop options", "See optional preferences you can set and configure"));
+    output.append(ploopHelpEntryHtml("ploop options", "Shows optional preferences and their current values."));
     print_html(output.to_string());
     cli_execute("pUpdates check ploop");
 }
@@ -333,36 +332,36 @@ void optional_help_info() {
     buffer output;
     output.append("<b>pLooper options</b><br>Each preference shows its current value. (empty) means no value is set.<br>");
     output.append(ploopHelpSectionHtml("Garbo and loop script") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_garboAdditionalArg", "Additional arguments to pass to garbo, separated by spaces. Init commands replace this setting with the selected options: cockroach targeting for all inits, plus optional cowo farming for utsinit."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_loopScriptClan", "Clan to join immediately before the configured loop script runs. pLooper returns to <b>prusias_ploop_homeClan</b> immediately afterward. Leave empty to stay in the home clan. <b>utsinit</b> prompts for this setting; <b>Bonus Adventures From Hell</b> is recommended for <b>underthesea</b>."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_garboAdditionalArg", "Extra Garbo arguments, separated by spaces. Init replaces them with your selections. All inits offer cockroach targeting, and <b>utsinit</b> also offers cowo farming."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_loopScriptClan", "Clan to use while the ascension script runs. pLoop returns to your home clan afterward. Leave empty to stay there. <b>utsinit</b> prompts for this and recommends <b>Bonus Adventures From Hell</b>."));
     output.append(ploopHelpSectionHtml("Custom scripts") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "CLI command to run at the end of pLoop's supplemental breakfast. Supplemental breakfast can run again after rollover or ascension."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_postDayScript", "Will cli_execute whatever this property is set to once the day is finished, just before the end of day ptrack breakpoint is recorded."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "CLI command to run after supplemental breakfast. Runs again after rollover or ascension."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_postDayScript", "CLI command to run before the end-of-day ptrack breakpoint."));
     output.append(ploopHelpSectionHtml("Ascension and nightcap") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_preAscendSoybeanFutures", "Set to true to spend Interesting Coins on soybean futures just before ascending. Coins are quest items and do not survive the Astral Gash, while the food does. Buys as many as the coins on hand cover, and a fresh run hands back 4 coins regardless, so leg 1 of a day is normally holding the 7 one purchase costs."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysSteelOrgan", "Always try to run steel organ. Helpful to set to true if you're running a new path that ploop doesn't know about."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_openKnobTreasury", "Set to <b>true</b> to open Cobb's Knob Treasury after the loop script, by adventuring in The Outskirts of Cobb's Knob for the encryption key (about 11 turns) and using the council's map."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_postRunMoonTune", "Set to integer corresponding to moon id. If you have tunes available after the run, will try to tune to this moon sign."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_nightcapMPA", "False or empty string will disable. Manually set MPA for nightcapping for those who have an MPA so high, CONSUME will overcap."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_leg1Pearlo", "Set to <b>true</b> to farm profitable pearls on Leg 1 after rollover, before ascending. Requires an equippable Drunkula's wineglass. pLoop checks profit before saving Fishy and reserves turns for the expanded diet. Off by default; setting it to false won't interrupt a route already past the first Garbo pass."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_smokeMessage", "Message to write with the campfire smokes before ascension. Leave empty for the default. Set it with <b>ploop smokemessage (your message)</b> rather than by hand. 100 character max; <b>%n</b> is replaced with the smoke number and an <b>&amp;</b> becomes <b>and</b>."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_optOutSmoking", "Set to <b>true</b> to disable using 4 campfire smokes before ascension when Getaway Campsite is unlocked."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_disableOffhandRemarkable", "Set to true to disable casting offhand remarkable on rollover"));
+    output.append(ploopHelpOptionHtml("prusias_ploop_preAscendSoybeanFutures", "Set to <b>true</b> to buy as many soybean futures as your Interesting Coins cover before ascension. The food carries over, and the Astral Gash takes any coins left over."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysSteelOrgan", "Set to <b>true</b> to try for a steel organ on any path."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_openKnobTreasury", "Set to <b>true</b> to open Cobb's Knob Treasury after the ascension script. Farms the encryption key if needed (about 11 turns)."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_postRunMoonTune", "Moon sign ID to tune to after the run if your hewn moon-rune spoon can still tune. Leave empty to skip."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_nightcapMPA", "Meat per adventure to pass to CONSUME for nightcap. Empty or <b>false</b> uses <b>valueOfAdventure</b>."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_leg1Pearlo", "Set to <b>true</b> to farm profitable pearls before ascending. Requires an equippable Drunkula's wineglass. pLoop saves Fishy and budgets turns for the expanded diet. Off by default. Once past the first Garbo pass, the route continues if disabled."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_smokeMessage", "Pre-ascension campfire message. Leave empty for the default. Limit 100 characters. <b>%n</b> becomes the smoke number and <b>&amp;</b> becomes <b>and</b>."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_optOutSmoking", "Set to <b>true</b> to skip the four pre-ascension campfire smokes at Getaway Campsite."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_disableOffhandRemarkable", "Set to <b>true</b> to skip casting Offhand Remarkable during nightcap setup."));
     output.append(ploopHelpSectionHtml("PvP") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysPvP", "Set to true to always break stone and maximize PvP fights (probably only worth if you have robort or want RO pvp fights). Will leave you to being exposed for pvp looting over RO."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_leg1PvP", "Set to true to break stone and maximize PvP fights only on leg 1 (probably only worth if you have robort). Will leave you to being exposed for pvp looting only during leg 1 garbo."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_neverPvpOverride", "Set to true to disable all pvp related actions. Useful if you don't want to break stone or get pvp fights at all."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_useAdvForPvpAtBoxingDaycare", "Set to <b>true</b> if you want to spend 1 adv getting pvp fights from boxing daycare."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_alwaysPvP", "Set to <b>true</b> to break the Hippy Stone and run PvP at nightcap. Your items can be looted over rollover."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_leg1PvP", "Set to <b>true</b> to break the Hippy Stone before leg 1 Garbo, opening you to looting earlier in the day."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_neverPvpOverride", "Set to <b>true</b> to skip pLoop's PvP actions."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_useAdvForPvpAtBoxingDaycare", "Set to <b>true</b> to spend 1 adventure on PvP fights at Boxing Daycare."));
     output.append(ploopHelpSectionHtml("Other automation") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to true for ploop to run freecandy on halloweens. You should have downloaded and configured freecandy yourself"));
-    output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> to try to duplicate an item with the Machine Elf. Your ascension script can use up to 5 Deep Machine Tunnels free fights and should leave the following choice adventure for pLoop. pLoop finishes any remaining fights before taking that choice."));
-    output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "Set to <b>item id</b> you would like to dupe"));
-    output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "Set to the <b>number</b> of raffle tickets to have bought by the end of the day. Tickets already bought today count towards it. Tickets cost 10,000 meat each. 0 or empty buys none."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_detectHalloween", "Set to <b>true</b> to run <b>freecandy</b> on Halloween. Install and configure it first."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_tryDmtDupe", "Set to <b>true</b> for Machine Elf duplication. Your ascension script can use up to 5 DMT free fights. pLoop finishes any remaining fights and takes the choice."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_dmtDupeItemId", "ID of the item to duplicate."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_raffleTicketCount", "Daily raffle ticket target, including tickets already bought today. Tickets cost 10,000 Meat each. <b>0</b> or empty skips buying."));
     output.append(ploopHelpSectionHtml("A Shrunken Adventurer am I") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoSaladFork", "Set to true to disable preparing a salad fork before ascension for smol"));
-    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoFrostyMug", "Set to true to disable preparing a frosty mug before ascension for smol"));
+    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoSaladFork", "Set to <b>true</b> to skip preparing a salad fork before ascending."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_smolNoFrostyMug", "Set to <b>true</b> to skip preparing a frosty mug before ascending."));
     output.append(ploopHelpSectionHtml("11037 Leagues Under The Sea") + "<br>");
-    output.append(ploopHelpOptionHtml("prusias_ploop_utsCodpieceCheck", "Set to true to make sure The Eternity Codpiece holds five unblemished pearls before ascending into path 55. Gems survive the Astral Gash and the path blocks pulls, so this is how the pearls the Nautical Seaceress needs get into the run. Missing pearls are bought from the mall at up to <b>valueOfAdventure * 10 * 2</b> meat each, and this runs before every path 55 ascension, so budget for up to five of them each time."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_utsCodpieceCheck", "Set to <b>true</b> to fill The Eternity Codpiece with five unblemished pearls before each path 55 ascension. Mounted pearls carry into the run. Missing pearls can cost up to <b>20 × valueOfAdventure</b> Meat each."));
     print_html(output.to_string());
 }
 
