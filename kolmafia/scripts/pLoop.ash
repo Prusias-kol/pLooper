@@ -695,24 +695,27 @@ void runPloopBreakfast(boolean forceMafiaBreakfast) {
     set_property(completedProperty, true);
 }
 
-boolean useCombo() {
+boolean useCombo(boolean countFreeWalks) {
+    if (my_adventures() <= 0) return false;
+
     if (available_amount($item[Beach Comb]) == 0 && available_amount($item[driftwood beach comb]) == 0) {
         int sandprice = mall_price($item[Grain of sand]) * 3;
         int combPrice = mall_price($item[Piece of driftwood]);
-        int advLimit = combPrice/sandprice;
-        if (my_adventures() > advLimit) {
+        if (sandprice > 0 && combPrice > 0 && my_adventures() > combPrice / sandprice) {
             cli_execute("buy 1 piece of driftwood");
             cli_execute("use piece of driftwood");
         }
-
     }
     if (available_amount($item[Beach Comb]) > 0 || available_amount($item[driftwood beach comb]) > 0) {
-        if (my_adventures() > 0) {
-            cli_execute("combo " + my_adventures());
-            return true;
-        }
+        // Combo counts free walks toward its requested combs.
+        int freeWalks = countFreeWalks ? max(0, 11 - get_property("_freeBeachWalksUsed").to_int()) : 0;
+        return cli_execute("combo " + (my_adventures() + freeWalks));
     }
     return false;
+}
+
+boolean useCombo() {
+    return useCombo(false);
 }
 
 boolean tryInstallInductionOven() {
@@ -1819,12 +1822,29 @@ int leg1ExpandedDietYield() {
 void burnLeg1PearloLeftovers() {
     // Garbo's outfits forbid organ extenders. While over capacity, spend the
     // remaining turns with legal wineglass gear and an explicit attack macro.
-    print("Leg 1 pearlo: burning " + my_adventures() + " leftover adventures at Barf Mountain with organ gear equipped.", "teal");
+    location farm = $location[Barf Mountain];
+    if (!can_adventure(farm)) {
+        print("Leg 1 pearlo: Barf Mountain is unavailable. Trying combo for the remaining adventures.", "teal");
+        string comboError = catch {
+            useCombo(true);
+        };
+        if (current_round() > 0 || handling_choice() || in_multi_fight() || choice_follows_fight()) {
+            abort("ERROR_PLOOP: Finish the combat or choice left by combo, then rerun preascend.");
+        }
+        if (my_adventures() == 0) return;
+        if (comboError != "") print("Leg 1 pearlo: combo stopped: " + comboError, "orange");
+
+        // The Warren needs neither a charter nor underwater breathing gear.
+        farm = $location[The Dire Warren];
+        if (!can_adventure(farm)) {
+            abort("ERROR_PLOOP: Combo left adventures unspent and The Dire Warren is unavailable. Spend the remaining turns with the organ gear and wineglass equipped, then rerun preascend.");
+        }
+    }
+    print("Leg 1 pearlo: burning " + my_adventures() + " leftover adventures at " + farm + " with organ gear equipped.", "teal");
     while (my_adventures() > 0) {
         equipLeg1PearloOrgans();
-        location farm = $location[Barf Mountain];
         if (!can_adventure(farm) || have_effect($effect[Beaten Up]) > 0 || !restore_hp(my_maxhp()))
-            abort("ERROR_PLOOP: Cannot burn expanded-organ turns safely at Barf Mountain. Spend them with the organ gear and wineglass equipped, then rerun preascend.");
+            abort("ERROR_PLOOP: Cannot burn expanded-organ turns safely at " + farm + ". Spend them with the organ gear and wineglass equipped, then rerun preascend.");
         int before = my_adventures();
         if (!adv1(farm, -1, "attack; repeat;") || current_round() > 0 || handling_choice()
                 || have_effect($effect[Beaten Up]) > 0 || my_adventures() >= before
