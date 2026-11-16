@@ -1183,7 +1183,7 @@ void runGarboWithDigitizeRecovery(string command) {
     }
 }
 
-void garboUsage(string x, boolean allowYachtzee) {
+void garboUsage(string x, boolean allowYachtzee, boolean skipDiet) {
 	print("trying to run garbo","teal");
     if (have_familiar($familiar[Patriotic Eagle])) {
         if (get_property("_citizenZone") != "Barf Mountain") {
@@ -1212,8 +1212,15 @@ void garboUsage(string x, boolean allowYachtzee) {
         garboString += " yachtzeechain";
     if (x != "")
         garboString += " " + x;
-    if (get_property("prusias_ploop_garboAdditionalArg") != "")
-        garboString += " " + get_property("prusias_ploop_garboAdditionalArg");
+    string additionalArgs = get_property("prusias_ploop_garboAdditionalArg");
+    if (skipDiet) {
+        // Replace any saved diet flag while preserving quoted argument values.
+        matcher dietFlag = create_matcher("(\"[^\"]*\"|'[^']*')|(?<!\\S)!?nodiet(?:\\s+|$)", additionalArgs);
+        additionalArgs = replace_all(dietFlag, "$1");
+        additionalArgs = replace_all(create_matcher("^\\s+|\\s+$", additionalArgs), "");
+        garboString += " nodiet";
+    }
+    if (additionalArgs != "") garboString += " " + additionalArgs;
     //Ploop's init sets this exact argument. Keep the saved setting for later legs.
     if (garboString.contains_text(" farmingMethod cowo")) {
         if (!get_property("corralUnlocked").to_boolean()) visit_url("seafloor.php");
@@ -1224,6 +1231,10 @@ void garboUsage(string x, boolean allowYachtzee) {
     }
     print("Running garbo with " + garboString);
     runGarboWithDigitizeRecovery(garboString);
+}
+
+void garboUsage(string x, boolean allowYachtzee) {
+    garboUsage(x, allowYachtzee, false);
 }
 
 void garboUsage(string x) {
@@ -1306,7 +1317,8 @@ void postRunNoGarbo() {
     // Rerun Mafia breakfast after pulling items from storage and opening beach access.
     runPloopBreakfast(true);
 
-    if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49)
+    if (my_mp() < 250 && item_amount($item[10058]) > 0 && get_property("prusias_ploop_pathId").to_int() != 49
+        && (item_amount($item[magical sausage]) > 0 || item_amount($item[magical sausage casing]) > 0))
         cli_execute("eat magical sausage");
     dmt_dupe();
     //rain-doh
@@ -1316,7 +1328,8 @@ void postRunNoGarbo() {
     unequipFamiliarItem($familiar[Left-Hand Man]);
     
 
-    //Asdon prefueling is shared by every Garbo mode; Garbo selects the effect.
+    //Cover paths that skip the steel organ or run leg 2 directly. The shared
+    //prefuel ledger remembers any fuel supplied before the organ quest.
     prefuelAsdonWithBigPies();
     if (available_amount($item[5553]) > 0) {
         //rain-doh
@@ -1481,6 +1494,8 @@ void acquireSteelOrganIfNeeded() {
             cli_execute("drink astral pilsner");
         }
     }
+    //Storage is already emptied. Give the steel organ script fuel for its bumper banish.
+    prefuelAsdonWithBigPies();
     set_property("_prusias_ploop_got_steel_organ", "true");
     cli_execute("ploopgoals goal organ");
 }
@@ -1954,7 +1969,12 @@ void runPreAscensionPhase(boolean halloween) {
     }
 
     boolean pearlRoute = get_property(leg1PearloStage) != "";
-    if (pearlRoute) runLeg1PearloPreAscend();
+    if (pearlRoute) {
+        runLeg1PearloPreAscend();
+    } else if (!halloween && my_familiar() != $familiar[Stooper] && my_inebriety() < inebriety_limit()) {
+        print("Leg 1 preascend: liver has room. Running Garbo before Stooper prep.", "teal");
+        garboUsage("ascend");
+    }
 
     if (!pearlRoute && my_inebriety() == inebriety_limit() && my_familiar() != $familiar[Stooper]) {
         preCSrun();
@@ -1964,18 +1984,25 @@ void runPreAscensionPhase(boolean halloween) {
     }
 
     if (!needToAcquireItem($item[Drunkula's wineglass])) {
-        print("Breakfast leg end of day, overdrunk with wineglass", "teal");
-        if (!pearlRoute && my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) {
+        print("Leg 1 preascend: wineglass available, drunkenness " + my_inebriety() + "/" + inebriety_limit() + ".", "teal");
+        // Allow CONSUME to finish the nightcap if Stooper still has liver space after distillate.
+        if (!pearlRoute && my_familiar() == $familiar[Stooper] && my_inebriety() <= inebriety_limit()) {
             string nightcapValue = halloween ? "9999" : (get_property("valueOfAdventure").to_int()/2).to_string();
             cli_execute("CONSUME ALL NIGHTCAP VALUE " + nightcapValue);
         }
 
         prepPvp();
-        if (!pearlRoute && my_inebriety() > inebriety_limit() && my_adventures() > 0) {
-            if (halloween) {
-                cli_execute("freecandy");
+        if (!pearlRoute && my_adventures() > 0) {
+            if (my_inebriety() > inebriety_limit()) {
+                if (halloween) {
+                    cli_execute("freecandy");
+                }
+                garboUsage("ascend");
+            } else {
+                // Distillate can add adventures without putting us over Stooper's limit.
+                print("Leg 1 preascend: running Garbo without a diet for " + my_adventures() + " remaining adventures.", "teal");
+                garboUsage("ascend", false, true);
             }
-            garboUsage("ascend");
         }
 
         string breakpoint = halloween ? "spookyWineglassDone" : "wineglassDone";
@@ -1985,11 +2012,10 @@ void runPreAscensionPhase(boolean halloween) {
         spendPvpFightsIfNeeded();
 
         if (my_adventures() > 0) {
-            print("ERROR_PLOOP: Still adventures left over after", "red");
             if (halloween) {
                 restoreHalloweenMPA();
             }
-            abort();
+            abort("ERROR_PLOOP: " + my_adventures() + " adventures remain after leg 1 cleanup.");
         }
         if (!halloween) {
             prepPvp();
