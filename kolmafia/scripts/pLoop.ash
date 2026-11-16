@@ -1233,12 +1233,8 @@ void garboUsage(string x, boolean allowYachtzee, boolean skipDiet) {
     runGarboWithDigitizeRecovery(garboString);
 }
 
-void garboUsage(string x, boolean allowYachtzee) {
-    garboUsage(x, allowYachtzee, false);
-}
-
 void garboUsage(string x) {
-    garboUsage(x, true);
+    garboUsage(x, true, false);
 }
 
 void prefuelAsdonWithBigPies() {
@@ -1694,7 +1690,7 @@ void runGarboSavingLeg1Fishy(string args, string nextStage) {
         set_property("autoSatisfyWithCloset", "false");
         set_property("autoSatisfyWithStorage", "false");
         set_property("_skateBuff1", "true");
-        garboUsage(args, nextStage == "initialDone");
+        garboUsage(args, nextStage == "initialDone", false);
         set_property(leg1PearloStage, nextStage);
     } finally {
         restoreLeg1PearloFishy();
@@ -1957,7 +1953,7 @@ void runLeg1PearloPreAscend() {
     if (my_adventures() > 0) {
         equipLeg1PearloOrgans();
         if (leg1PearloNeedsOrganGear()) burnLeg1PearloLeftovers();
-        else garboUsage("ascend nodiet", false);
+        else garboUsage("ascend nodiet", false, false);
     }
     if (my_adventures() > 0) abort("ERROR_PLOOP: Leg 1 still has adventures left. Rerun preascend to finish.");
     set_property(leg1PearloStage, "done");
