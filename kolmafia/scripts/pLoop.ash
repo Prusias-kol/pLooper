@@ -149,18 +149,10 @@ string ploopHelpEntryHtml(string label, string description) {
     return "<b>" + entity_encode(label) + "</b>" + detail;
 }
 
-void printPloopHelpEntry(string label, string description) {
-    print_html(ploopHelpEntryHtml(label, description));
-}
-
 string ploopHelpOptionHtml(string propertyName, string description) {
     string preference = "<code>" + entity_encode(propertyName) + "</code> = " + ploopHelpValue(propertyName);
     string detail = description == "" ? "" : "<div style=\"margin-left: 16px; margin-top: 0; margin-bottom: 0;\">" + description + "</div>";
     return preference + detail;
-}
-
-void printPloopHelpOption(string propertyName, string description) {
-    print_html(ploopHelpOptionHtml(propertyName, description));
 }
 
 void listSaves() {
@@ -170,7 +162,7 @@ void listSaves() {
         return;
     }
     foreach x, it in get_property("prusias_ploop_validSaves").split_string('(?<!\\\\)(, |,)') {
-        printPloopHelpEntry(it, "");
+        print_html(ploopHelpEntryHtml(it, ""));
     }
 }
 
@@ -205,7 +197,7 @@ void listInitArgs() {
         if (propertyName == "prusias_ploop_garboWorkshed") printPloopHelpSection("Garbo and worksheds");
         if (propertyName == "prusias_ploop_preAscendGarden") printPloopHelpSection("Pre-ascension and nightcap");
         if (propertyName == "uts_postLoopFarmPearls") printPloopHelpSection("UnderTheSea");
-        printPloopHelpOption(propertyName, "");
+        print_html(ploopHelpOptionHtml(propertyName, ""));
     }
 }
 
@@ -714,10 +706,6 @@ boolean useCombo(boolean countFreeWalks) {
     return false;
 }
 
-boolean useCombo() {
-    return useCombo(false);
-}
-
 boolean tryInstallInductionOven() {
     item oven = $item[warbear induction oven];
     if (get_property("_workshedItemUsed").to_boolean() || get_workshed() == oven || available_amount(oven) == 0) {
@@ -1002,7 +990,7 @@ string smokeMessage(int smokeNum) {
 void ascendToValhalla() {
     pre_ascend_pulls();
 
-    useCombo();
+    useCombo(false);
 
     if (!get_property('thoth19_event_list').contains_text("wineglassDone") && !get_property('thoth19_event_list').contains_text("preAscend"))
         addBreakpoint("preAscend");
@@ -1568,12 +1556,6 @@ void openKnobTreasury() {
     }
 }
 
-void openKnobTreasuryIfNeeded() {
-    if (get_property("prusias_ploop_openKnobTreasury").to_boolean() && !knobOpen()) {
-        openKnobTreasury();
-    }
-}
-
 void tunePostRunMoonIfNeeded() {
     if (get_property('moonTuned').to_boolean() || get_property("prusias_ploop_postRunMoonTune") == "") {
         return;
@@ -1596,7 +1578,9 @@ void installPostLoopWorkshedIfNeeded() {
 
 void prepareForPostRun() {
     acquireSteelOrganIfNeeded();
-    openKnobTreasuryIfNeeded();
+    if (get_property("prusias_ploop_openKnobTreasury").to_boolean() && !knobOpen()) {
+        openKnobTreasury();
+    }
     tunePostRunMoonIfNeeded();
     returnClanStashItems();
     installPostLoopWorkshedIfNeeded();
@@ -2021,7 +2005,7 @@ void runPreAscensionPhase(boolean halloween) {
 
     print("Breakfast leg end of day, overdrunk WITHOUT wineglass", "teal");
     cli_execute("CONSUME ALL NIGHTCAP VALUE 100");
-    useCombo();
+    useCombo(false);
 
     if (halloween) {
         if (pvp_attacks_left() > 0) {
