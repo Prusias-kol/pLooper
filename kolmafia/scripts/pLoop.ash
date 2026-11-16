@@ -366,8 +366,8 @@ string astralDeliPrompt = "Provide the exact name of the astral deli item you wa
 string genderPrompt = "Provide the integer corresponding to the gender you wish to be! 1 for male, 2 for female.";
 string ascendScriptPrompt = "What script should be run after exiting valhalla to finish your run (ex: instantsccs, loopsmol, etc.)? Type just as you would type in the CLI to run the script.";
 string loopScriptClanPrompt = "What clan should pLooper join while running your loop script? Bonus Adventures From Hell is recommended for underthesea. Sets prusias_ploop_loopScriptClan. Leave blank to stay in your home clan. Will return to home clan after loop script is done.";
-string workshedPrompt = "On leg 1 (after RO at the start of the day), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
-string leg2WorkshedPrompt = "On leg 2 (after ascending and running your ascension script), what workshed should garbo switch to? Provide an exact name of the workshed item to install. Leave blank to ignore";
+string workshedPrompt = "Leg 1 workshed for Garbo (after rollover, before ascending). Enter the exact item name or leave blank for no swap. Setup asks for Leg 2 later.";
+string leg2WorkshedPrompt = "Leg 2 workshed for Garbo (after ascending and finishing your loop script). Enter the exact item name or leave blank for no swap.";
 string nightcapOutfitPrompt = "Provide the exact name of the nightcap outfit you will be using.";
 string pathIdPrompt = "What path id should be used?";
 
@@ -450,7 +450,7 @@ void robotInit() {
     promptBasicInitProperties();
     promptAscensionProperties("Provide the integer id of the moon you want to ascend into (LoopRobot wants Vole). 1-Mongoose;2-Wallaby;3-Vole;4-Platypus;5-Opossum;6-Marmot;7-Wombat;8-Blender;9-Packrat");
     set_property("prusias_ploop_ascendScript", "looprobot");
-    set_property("prusias_ploop_workshedItemAfterLoopScript", user_prompt("Looprobot doesn't use a workshed. What workshed would you like to use after looprobot finishes? You will be prompted for a 2nd workshed for garbo to swap to after this."));
+    set_property("prusias_ploop_workshedItemAfterLoopScript", user_prompt("After LoopRobot, fill the empty workshed. Enter the exact item name or leave blank. The Leg 2 Garbo swap is a separate prompt."));
     promptPostAscensionProperties(false);
     set_property("prusias_ploop_pathId", "41");
     set_property("prusias_ploop_ascensionType", "2");
