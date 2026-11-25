@@ -1458,12 +1458,38 @@ void postAscendScriptCleanup() {
     }
 }
 
+void eatPreparedLegendFood(item food, string eatenProperty) {
+    if (!get_property(eatenProperty).to_boolean()
+            && item_amount(food) > 0
+            && fullness_limit() - my_fullness() >= food.fullness) {
+        print("Eating the prepared " + food + " for post-UTS adventures.", "teal");
+        if (!eat(1, food)) abort("ERROR_PLOOP: Could not eat the post-UTS " + food + ".");
+    }
+}
+
+void prepareUtsAftercoreTurns() {
+    if (get_property("prusias_ploop_pathId") != "55" || !get_property("kingLiberated").to_boolean()) return;
+
+    // UTS can spend the last adventures farming pearls. Pull the prepared food
+    // before steel-organ acquisition or any other post-run task needs turns.
+    if (!cli_execute("hagnk all")) abort("ERROR_PLOOP: Could not empty storage after UTS.");
+    if (!cli_execute("refresh all")) abort("ERROR_PLOOP: Could not refresh after the UTS storage pull.");
+    eatPreparedLegendFood($item[Calzone of Legend], "calzoneOfLegendEaten");
+    eatPreparedLegendFood($item[Pizza of Legend], "pizzaOfLegendEaten");
+}
+
 void acquireSteelOrganIfNeeded() {
-    if (get_property("_prusias_ploop_got_steel_organ") == "true"
-            || (!get_property("prusias_ploop_alwaysSteelOrgan").to_boolean()
-                && !(steel_organ_paths contains get_property("prusias_ploop_pathId")))) {
+    if (!get_property("prusias_ploop_alwaysSteelOrgan").to_boolean()
+            && !(steel_organ_paths contains get_property("prusias_ploop_pathId"))) {
         return;
     }
+    // Older versions set the tracker before running the goal, even if it stopped
+    // without enough adventures. The actual skill is authoritative on retries.
+    if (have_skill($skill[Liver of Steel])) {
+        set_property("_prusias_ploop_got_steel_organ", "true");
+        return;
+    }
+    set_property("_prusias_ploop_got_steel_organ", "false");
 
     cli_execute("hagnk all");
     cli_execute("refresh all");
@@ -1480,8 +1506,10 @@ void acquireSteelOrganIfNeeded() {
     }
     //Storage is already emptied. Give the steel organ script fuel for its bumper banish.
     prefuelAsdonWithBigPies();
+    if (!cli_execute("ploopgoals goal organ") || !have_skill($skill[Liver of Steel])) {
+        abort("ERROR_PLOOP: Steel-organ acquisition is unfinished. Restore adventures or resolve the reported failure, then rerun ploop run postscriptprep.");
+    }
     set_property("_prusias_ploop_got_steel_organ", "true");
-    cli_execute("ploopgoals goal organ");
 }
 
 //can_adventure is already true while holding the key and the map, before the map is used
@@ -1577,6 +1605,7 @@ void installPostLoopWorkshedIfNeeded() {
 }
 
 void prepareForPostRun() {
+    prepareUtsAftercoreTurns();
     acquireSteelOrganIfNeeded();
     if (get_property("prusias_ploop_openKnobTreasury").to_boolean() && !knobOpen()) {
         openKnobTreasury();
