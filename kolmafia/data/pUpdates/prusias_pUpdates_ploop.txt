@@ -1,4 +1,4 @@
--1	15
+-1	19
 0	pUpdates for ploop are now installed
 1	Now uses UberPvpOptimizer and PVP_MAB to run pvp fights right before ascending 
 2	Supports small loop
@@ -15,3 +15,7 @@
 13	Digitize recovery: Automatically finishes interrupted combats and retries garbo up to twice when a Digitize target mismatch occurs.
 14	Help refresh: Cleaner formatting, grouped options with current values, and new listInitArgs and run help commands.
 15	NEW PATH SUPPORT: UnderTheSea looping! Run ploop utsinit to configure underthesea, pearl preparation, optional cowo farming, and automatic steel organ acquisition.
+16	MAJOR FEATURES: UTS pearl farming is automatic. Set uts_postLoopFarmPearls=false to let pLoop handle it. With Drunkula’s wineglass, Leg 2 Pearlo runs after the nightcap diet. Without one, it runs sober after the steel organ.
+17	Post-UTS food prep now crafts missing Calzone of Legend and Pizza of Legend, uses Milk of Magnesium when available, and eats before the steel organ step.
+18	MAJOR FEATURES: Leg 2 nightcap now uses available organ extenders and checks for turns above the rollover cap. It can spend the overflow on Pearlo in UTS, Barf Mountain, or Beach Comb, then restores your rollover outfit.
+19	New optional preference prusias_ploop_leg2BorrowedTimeMaxPrice lets pLoop use Borrowed Time before Leg 2 Garbo. Set a Meat price cap in ploop options to move 20 rollover turns into today’s farming.
