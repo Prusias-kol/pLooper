@@ -63,6 +63,7 @@ prusias_ploop_postRunMoonTune = int
 prusias_ploop_optOutSmoking = boolean
 prusias_ploop_smokeMessage = string - message for pre-ascension campfire smokes. if empty, uses the default
 prusias_ploop_nightcapMPA = int
+prusias_ploop_leg2BorrowedTimeMaxPrice = int - maximum Meat to pay for borrowed time before Leg 2 Garbo, empty or 0 disables
 prusias_ploop_garboAdditionalArg = string - requested Garbo arguments; farmingMethod cowo is omitted for a run when The Coral Corral is unavailable
 prusias_ploop_runBigPieAsdonPrefuel = boolean - opt in to post-run Asdon pie prefueling for all Garbo modes; defaults to false; pies must cost less than 2500 meat, with caps of 1100 fuel and 20000 meat in pie value per day/ascension; Garbo chooses the driving effect and tops off
 prusias_ploop_breakfastAdditionalScript = string
@@ -333,6 +334,7 @@ void optional_help_info() {
     output.append("<b>pLooper options</b><br>Each preference shows its current value. (empty) means no value is set.<br>");
     output.append(ploopHelpSectionHtml("Garbo and loop script") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_garboAdditionalArg", "Extra Garbo arguments, separated by spaces. Init replaces them with your selections. All inits offer cockroach targeting, and <b>utsinit</b> also offers cowo farming."));
+    output.append(ploopHelpOptionHtml("prusias_ploop_leg2BorrowedTimeMaxPrice", "Maximum Meat to pay for borrowed time before Leg 2 Garbo. A positive value enables use of an available copy or purchase within the limit. Moves 20 adventures from rollover into today's Garbo. Empty or <b>0</b> disables it."));
     output.append(ploopHelpOptionHtml("prusias_ploop_loopScriptClan", "Clan to use while the ascension script runs. pLoop returns to your home clan afterward. Leave empty to stay there. <b>utsinit</b> prompts for this and recommends <b>Bonus Adventures From Hell</b>."));
     output.append(ploopHelpSectionHtml("Custom scripts") + "<br>");
     output.append(ploopHelpOptionHtml("prusias_ploop_breakfastAdditionalScript", "CLI command to run after supplemental breakfast. Runs again after rollover or ascension."));
@@ -2190,7 +2192,23 @@ void runLeg2GarboPhase(boolean halloween) {
         return;
     }
 
-    boolean needsGarbo = get_property("kingLiberated").to_boolean()
+    boolean kingLiberated = get_property("kingLiberated").to_boolean();
+    int borrowedTimeMaxPrice = get_property("prusias_ploop_leg2BorrowedTimeMaxPrice").to_int();
+    item borrowedTime = $item[borrowed time];
+    if (kingLiberated && borrowedTimeMaxPrice > 0 && !get_property("_borrowedTimeUsed").to_boolean()
+            && my_inebriety() <= inebriety_limit() && !needsStomachOrSpleenGear()
+            && is_unrestricted(borrowedTime)) {
+        if (available_amount(borrowedTime) == 0 && can_interact()) {
+            if (storage_amount(borrowedTime) > 0) take_storage(1, borrowedTime);
+            else buy(1, borrowedTime, borrowedTimeMaxPrice);
+        }
+        if (available_amount(borrowedTime) > 0) {
+            print("Using borrowed time for Leg 2 Garbo.", "teal");
+            if (!use(1, borrowedTime)) print("Could not use borrowed time. Continuing Leg 2.", "orange");
+        }
+    }
+
+    boolean needsGarbo = kingLiberated
         && (my_inebriety() < inebriety_limit()
             || my_fullness() < fullness_limit()
             || my_spleen_use() < spleen_limit()
